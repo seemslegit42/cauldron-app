@@ -1,0 +1,207 @@
+// Migration to enhance schema with additional fields and models
+// This extends existing models and adds new ones to improve functionality
+
+// Enhance AgentSession model with additional fields
+model AgentSession {
+  // Keep all existing fields
+  
+  // Add new fields
+  sessionPurpose      String?         // Purpose of this session
+  businessContext     String?         // Business context for this session
+  sessionTags         String[]        // Tags for categorizing sessions
+  qualityScore        Float?          // Overall quality score for the session
+  userSatisfaction    Float?          // User satisfaction score
+  learningOutcomes    Json?           // What was learned from this session
+  sessionSource       String?         // Source that initiated the session (user, webhook, scheduled job, etc.)
+  parentSessionId     String?         // For tracking session hierarchies
+  childSessions       AgentSession[]  @relation("SessionHierarchy")
+  parentSession       AgentSession?   @relation("SessionHierarchy", fields: [parentSessionId], references: [id])
+  
+  // Add new relations
+  moduleState         ModuleState?    @relation("SessionModuleState")
+  sessionMetrics      SessionMetric[]
+  sessionEvents       SessionEvent[]
+}
+
+// Enhance ModuleState model with additional fields
+model ModuleState {
+  // Keep all existing fields
+  
+  // Add new fields
+  sessionId           String?         // Link to the session that created/modified this state
+  previousStateId     String?         // For tracking state history
+  stateType           String?         // Type of state (e.g., "user_preferences", "workflow_progress")
+  stateHash           String?         // Hash of the state for quick comparison
+  isSnapshot          Boolean         @default(false) // Whether this is a point-in-time snapshot
+  snapshotReason      String?         // Reason for creating this snapshot
+  expiresAt           DateTime?       // When this state expires (for temporary states)
+  
+  // Add new relations
+  session             AgentSession?   @relation("SessionModuleState", fields: [sessionId], references: [id])
+  previousState       ModuleState?    @relation("StateHistory", fields: [previousStateId], references: [id])
+  nextStates          ModuleState[]   @relation("StateHistory")
+  stateTransitions    StateTransition[]
+}
+
+// New model: SessionMetric for tracking detailed session metrics
+model SessionMetric {
+  id                  String         @id @default(uuid())
+  createdAt           DateTime       @default(now())
+  sessionId           String
+  metricType          String         // Type of metric (e.g., "response_time", "token_usage", "user_engagement")
+  metricValue         Float          // Value of the metric
+  timestamp           DateTime       @default(now())
+  metadata            Json?          // Additional metadata about the metric
+  session             AgentSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([metricType])
+  @@index([timestamp])
+}
+
+// New model: SessionEvent for tracking events within a session
+model SessionEvent {
+  id                  String         @id @default(uuid())
+  createdAt           DateTime       @default(now())
+  sessionId           String
+  eventType           String         // Type of event (e.g., "user_input", "agent_response", "error", "checkpoint")
+  eventData           Json           // Data associated with the event
+  timestamp           DateTime       @default(now())
+  sequence            Int            // Sequence number within the session
+  duration            Int?           // Duration of the event in milliseconds (if applicable)
+  session             AgentSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([eventType])
+  @@index([timestamp])
+  @@index([sequence])
+}
+
+// New model: StateTransition for tracking state changes
+model StateTransition {
+  id                  String         @id @default(uuid())
+  createdAt           DateTime       @default(now())
+  stateId             String         // The state being transitioned from
+  triggerId           String?        // What triggered this transition (e.g., user action, agent decision)
+  triggerType         String         // Type of trigger (e.g., "user_action", "agent_decision", "scheduled")
+  transitionData      Json           // Data about what changed
+  previousValues      Json?          // Previous values before the transition
+  newValues           Json?          // New values after the transition
+  state               ModuleState    @relation(fields: [stateId], references: [id], onDelete: Cascade)
+
+  @@index([stateId])
+  @@index([triggerType])
+  @@index([createdAt])
+}
+
+// Enhance AI_Agent model with additional fields
+model AI_Agent {
+  // Keep all existing fields
+  
+  // Add new fields
+  lastActiveAt        DateTime?      // When the agent was last active
+  totalSessions       Int            @default(0) // Total number of sessions
+  successRate         Float?         // Success rate of the agent (0-1)
+  specializations     String[]       // Areas the agent specializes in
+  learningMode        String?        // Current learning mode (e.g., "active", "passive", "supervised")
+  trainingStatus      String?        // Status of agent training (e.g., "initial", "trained", "fine-tuned")
+  versionHistory      Json?          // History of agent versions
+  
+  // Add new relations
+  agentMetrics        AgentMetric[]
+  agentVersions       AgentVersion[]
+}
+
+// New model: AgentMetric for tracking agent performance metrics
+model AgentMetric {
+  id                  String         @id @default(uuid())
+  createdAt           DateTime       @default(now())
+  agentId             String
+  metricType          String         // Type of metric (e.g., "response_time", "accuracy", "user_satisfaction")
+  metricValue         Float          // Value of the metric
+  timestamp           DateTime       @default(now())
+  timeframe           String         // Timeframe for this metric (e.g., "daily", "weekly", "monthly")
+  metadata            Json?          // Additional metadata about the metric
+  agent               AI_Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@index([metricType])
+  @@index([timestamp])
+  @@index([timeframe])
+}
+
+// New model: AgentVersion for tracking agent versions
+model AgentVersion {
+  id                  String         @id @default(uuid())
+  createdAt           DateTime       @default(now())
+  agentId             String
+  versionNumber       String         // Version number (e.g., "1.0.0")
+  changes             Json           // What changed in this version
+  createdById         String         // Who created this version
+  isActive            Boolean        @default(false) // Whether this is the active version
+  activatedAt         DateTime?      // When this version was activated
+  deactivatedAt       DateTime?      // When this version was deactivated
+  performance         Json?          // Performance metrics for this version
+  agent               AI_Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  createdBy           User           @relation(fields: [createdById], references: [id])
+
+  @@index([agentId])
+  @@index([versionNumber])
+  @@index([createdById])
+  @@index([isActive])
+}
+
+// Enhance InteractionMemory model with additional fields
+model InteractionMemory {
+  // Keep all existing fields
+  
+  // Add new fields
+  memoryType          String?        // More specific type of memory (e.g., "fact", "preference", "interaction")
+  confidence          Float?         // Confidence in this memory (0-1)
+  lastAccessedAt      DateTime?      // When this memory was last accessed
+  accessCount         Int            @default(0) // How many times this memory has been accessed
+  sourceType          String?        // Source of this memory (e.g., "user_input", "agent_inference", "external")
+  verificationStatus  String?        // Status of verification (e.g., "unverified", "verified", "disputed")
+  relatedMemories     Json?          // IDs of related memories
+  
+  // Add new relations
+  memoryAccesses      MemoryAccess[]
+  memoryAnnotations   MemoryAnnotation[]
+}
+
+// New model: MemoryAccess for tracking memory access patterns
+model MemoryAccess {
+  id                  String             @id @default(uuid())
+  createdAt           DateTime           @default(now())
+  memoryId            String
+  accessType          String             // Type of access (e.g., "read", "update", "reference")
+  accessedBy          String             // ID of agent or user who accessed the memory
+  accessorType        String             // Type of accessor (e.g., "agent", "user", "system")
+  context             String?            // Context in which the memory was accessed
+  usefulness          Float?             // How useful the memory was (0-1)
+  memory              InteractionMemory  @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+
+  @@index([memoryId])
+  @@index([accessType])
+  @@index([accessedBy])
+  @@index([accessorType])
+}
+
+// New model: MemoryAnnotation for annotating memories
+model MemoryAnnotation {
+  id                  String             @id @default(uuid())
+  createdAt           DateTime           @default(now())
+  memoryId            String
+  annotationType      String             // Type of annotation (e.g., "correction", "enhancement", "verification")
+  content             String             // Content of the annotation
+  createdById         String             // Who created this annotation
+  isApplied           Boolean            @default(false) // Whether this annotation has been applied
+  appliedAt           DateTime?          // When this annotation was applied
+  memory              InteractionMemory  @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+  createdBy           User               @relation(fields: [createdById], references: [id])
+
+  @@index([memoryId])
+  @@index([annotationType])
+  @@index([createdById])
+  @@index([isApplied])
+}

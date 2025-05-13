@@ -1,0 +1,248 @@
+/**
+ * CSS variables for the application
+ */
+
+:root {
+  /* Colors */
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary-700: #4338ca;
+  --color-primary-800: #3730a3;
+  --color-primary-900: #312e81;
+  --color-primary-950: #1e1b4b;
+
+  --color-secondary-50: #f8fafc;
+  --color-secondary-100: #f1f5f9;
+  --color-secondary-200: #e2e8f0;
+  --color-secondary-300: #cbd5e1;
+  --color-secondary-400: #94a3b8;
+  --color-secondary-500: #64748b;
+  --color-secondary-600: #475569;
+  --color-secondary-700: #334155;
+  --color-secondary-800: #1e293b;
+  --color-secondary-900: #0f172a;
+  --color-secondary-950: #020617;
+
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-900: #14532d;
+  --color-success-950: #052e16;
+
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-300: #fcd34d;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
+  --color-warning-900: #78350f;
+  --color-warning-950: #451a03;
+
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-200: #fecaca;
+  --color-error-300: #fca5a5;
+  --color-error-400: #f87171;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+  --color-error-800: #991b1b;
+  --color-error-900: #7f1d1d;
+  --color-error-950: #450a0a;
+
+  --color-info-50: #eff6ff;
+  --color-info-100: #dbeafe;
+  --color-info-200: #bfdbfe;
+  --color-info-300: #93c5fd;
+  --color-info-400: #60a5fa;
+  --color-info-500: #3b82f6;
+  --color-info-600: #2563eb;
+  --color-info-700: #1d4ed8;
+  --color-info-800: #1e40af;
+  --color-info-900: #1e3a8a;
+  --color-info-950: #172554;
+
+  /* Semantic colors */
+  --color-text-primary: var(--color-secondary-900);
+  --color-text-secondary: var(--color-secondary-700);
+  --color-text-tertiary: var(--color-secondary-500);
+  --color-text-disabled: var(--color-secondary-400);
+  --color-text-inverse: var(--color-secondary-50);
+  --color-text-link: var(--color-primary-600);
+  --color-text-success: var(--color-success-700);
+  --color-text-warning: var(--color-warning-700);
+  --color-text-error: var(--color-error-700);
+  --color-text-info: var(--color-info-700);
+
+  --color-background-primary: var(--color-secondary-50);
+  --color-background-secondary: var(--color-secondary-100);
+  --color-background-tertiary: var(--color-secondary-200);
+  --color-background-inverse: var(--color-secondary-900);
+  --color-background-success: var(--color-success-50);
+  --color-background-warning: var(--color-warning-50);
+  --color-background-error: var(--color-error-50);
+  --color-background-info: var(--color-info-50);
+
+  --color-border-primary: var(--color-secondary-200);
+  --color-border-secondary: var(--color-secondary-300);
+  --color-border-tertiary: var(--color-secondary-400);
+  --color-border-focus: var(--color-primary-500);
+  --color-border-success: var(--color-success-300);
+  --color-border-warning: var(--color-warning-300);
+  --color-border-error: var(--color-error-300);
+  --color-border-info: var(--color-info-300);
+
+  /* Spacing */
+  --spacing-px: 1px;
+  --spacing-0: 0;
+  --spacing-0-5: 0.125rem;
+  --spacing-1: 0.25rem;
+  --spacing-1-5: 0.375rem;
+  --spacing-2: 0.5rem;
+  --spacing-2-5: 0.625rem;
+  --spacing-3: 0.75rem;
+  --spacing-3-5: 0.875rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-7: 1.75rem;
+  --spacing-8: 2rem;
+  --spacing-9: 2.25rem;
+  --spacing-10: 2.5rem;
+  --spacing-11: 2.75rem;
+  --spacing-12: 3rem;
+  --spacing-14: 3.5rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  --spacing-24: 6rem;
+  --spacing-28: 7rem;
+  --spacing-32: 8rem;
+  --spacing-36: 9rem;
+  --spacing-40: 10rem;
+  --spacing-44: 11rem;
+  --spacing-48: 12rem;
+  --spacing-52: 13rem;
+  --spacing-56: 14rem;
+  --spacing-60: 15rem;
+  --spacing-64: 16rem;
+  --spacing-72: 18rem;
+  --spacing-80: 20rem;
+  --spacing-96: 24rem;
+
+  /* Typography */
+  --font-family-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-family-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  --font-size-6xl: 3.75rem;
+  --font-size-7xl: 4.5rem;
+  --font-size-8xl: 6rem;
+  --font-size-9xl: 8rem;
+
+  --font-weight-thin: 100;
+  --font-weight-extralight: 200;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  /* Borders */
+  --border-radius-none: 0;
+  --border-radius-sm: 0.125rem;
+  --border-radius-md: 0.25rem;
+  --border-radius-lg: 0.5rem;
+  --border-radius-xl: 0.75rem;
+  --border-radius-2xl: 1rem;
+  --border-radius-3xl: 1.5rem;
+  --border-radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  --shadow-none: 0 0 #0000;
+
+  /* Z-index */
+  --z-index-0: 0;
+  --z-index-10: 10;
+  --z-index-20: 20;
+  --z-index-30: 30;
+  --z-index-40: 40;
+  --z-index-50: 50;
+  --z-index-auto: auto;
+
+  /* Transitions */
+  --transition-duration-75: 75ms;
+  --transition-duration-100: 100ms;
+  --transition-duration-150: 150ms;
+  --transition-duration-200: 200ms;
+  --transition-duration-300: 300ms;
+  --transition-duration-500: 500ms;
+  --transition-duration-700: 700ms;
+  --transition-duration-1000: 1000ms;
+
+  --transition-timing-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --transition-timing-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --transition-timing-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark mode variables */
+.dark {
+  --color-text-primary: var(--color-secondary-50);
+  --color-text-secondary: var(--color-secondary-300);
+  --color-text-tertiary: var(--color-secondary-400);
+  --color-text-disabled: var(--color-secondary-600);
+  --color-text-inverse: var(--color-secondary-900);
+  --color-text-link: var(--color-primary-400);
+  --color-text-success: var(--color-success-400);
+  --color-text-warning: var(--color-warning-400);
+  --color-text-error: var(--color-error-400);
+  --color-text-info: var(--color-info-400);
+
+  --color-background-primary: var(--color-secondary-900);
+  --color-background-secondary: var(--color-secondary-800);
+  --color-background-tertiary: var(--color-secondary-700);
+  --color-background-inverse: var(--color-secondary-50);
+  --color-background-success: var(--color-success-900);
+  --color-background-warning: var(--color-warning-900);
+  --color-background-error: var(--color-error-900);
+  --color-background-info: var(--color-info-900);
+
+  --color-border-primary: var(--color-secondary-700);
+  --color-border-secondary: var(--color-secondary-600);
+  --color-border-tertiary: var(--color-secondary-500);
+  --color-border-focus: var(--color-primary-500);
+  --color-border-success: var(--color-success-700);
+  --color-border-warning: var(--color-warning-700);
+  --color-border-error: var(--color-error-700);
+  --color-border-info: var(--color-info-700);
+}

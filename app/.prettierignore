@@ -1,0 +1,35 @@
+# Wasp-generated files
+.wasp/
+
+# Build output
+dist/
+build/
+out/
+
+# Dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+
+# Coverage directory
+coverage/
+
+# Cache
+.cache/
+.eslintcache
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Misc
+.DS_Store
+*.pem
+
+# Package manager lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

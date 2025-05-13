@@ -1,0 +1,20 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "stylelint.vscode-stylelint",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-typescript-next",
+    "streetsidesoftware.code-spell-checker",
+    "yoavbls.pretty-ts-errors",
+    "formulahendry.auto-rename-tag",
+    "naumovs.color-highlight",
+    "mikestead.dotenv",
+    "dsznajder.es7-react-js-snippets",
+    "wix.vscode-import-cost",
+    "visualstudioexptteam.vscodeintellicode",
+    "christian-kohler.path-intellisense",
+    "jock.svg",
+    "redhat.vscode-yaml"
+  ]
+}

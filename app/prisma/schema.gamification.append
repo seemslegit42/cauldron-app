@@ -1,0 +1,205 @@
+// Gamification Schema Extension
+
+// User XP and Level tracking
+model UserXP {
+  id                String              @id @default(uuid())
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  userId            String              @unique
+  level             Int                 @default(1)
+  currentXP         Int                 @default(0)
+  totalXP           Int                 @default(0)
+  runes             Int                 @default(0)
+  lastXPGainAt      DateTime?
+  streakDays        Int                 @default(0)
+  streakLastUpdated DateTime?
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  xpTransactions    XPTransaction[]
+  runeTransactions  RuneTransaction[]
+  achievements      UserAchievement[]
+  rewards           UserReward[]
+
+  @@index([userId])
+  @@index([level])
+}
+
+// XP Transaction History
+model XPTransaction {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  userXpId    String
+  amount      Int
+  reason      String
+  description String?
+  metadata    Json?
+  userXp      UserXP   @relation(fields: [userXpId], references: [id], onDelete: Cascade)
+
+  @@index([userXpId])
+  @@index([createdAt])
+}
+
+// Rune Transaction History
+model RuneTransaction {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  userXpId    String
+  amount      Int
+  reason      String
+  description String?
+  metadata    Json?
+  userXp      UserXP   @relation(fields: [userXpId], references: [id], onDelete: Cascade)
+
+  @@index([userXpId])
+  @@index([createdAt])
+}
+
+// Achievement Definition
+model Achievement {
+  id                String            @id @default(uuid())
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  name              String            @unique
+  description       String
+  category          String            // uptime, security, performance, system
+  icon              String?
+  xpReward          Int               @default(0)
+  runeReward        Int               @default(0)
+  isRepeatable      Boolean           @default(false)
+  cooldownHours     Int?              // For repeatable achievements
+  requiredProgress  Int               @default(100)
+  isActive          Boolean           @default(true)
+  triggerCondition  String?           // JSON string of condition logic
+  metadata          Json?
+  userAchievements  UserAchievement[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
+// User Achievement Progress
+model UserAchievement {
+  id             String    @id @default(uuid())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  userXpId       String
+  achievementId  String
+  progress       Int       @default(0)
+  isUnlocked     Boolean   @default(false)
+  unlockedAt     DateTime?
+  lastProgressAt DateTime?
+  timesUnlocked  Int       @default(0)
+  metadata       Json?
+  userXp         UserXP    @relation(fields: [userXpId], references: [id], onDelete: Cascade)
+  achievement    Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userXpId, achievementId])
+  @@index([userXpId])
+  @@index([achievementId])
+  @@index([isUnlocked])
+}
+
+// Reward Definition
+model Reward {
+  id           String       @id @default(uuid())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  name         String       @unique
+  description  String
+  category     String       // boost, unlock, cosmetic, system
+  icon         String?
+  cost         Int
+  duration     Int?         // Duration in hours, null for permanent
+  isActive     Boolean      @default(true)
+  requiredLevel Int?        // Minimum level required
+  effectData   Json?        // Effect configuration
+  metadata     Json?
+  userRewards  UserReward[]
+
+  @@index([category])
+  @@index([isActive])
+  @@index([requiredLevel])
+}
+
+// User Reward Ownership
+model UserReward {
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now())
+  userXpId    String
+  rewardId    String
+  isActive    Boolean   @default(true)
+  activatedAt DateTime  @default(now())
+  expiresAt   DateTime?
+  metadata    Json?
+  userXp      UserXP    @relation(fields: [userXpId], references: [id], onDelete: Cascade)
+  reward      Reward    @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+
+  @@unique([userXpId, rewardId, isActive])
+  @@index([userXpId])
+  @@index([rewardId])
+  @@index([isActive])
+  @@index([expiresAt])
+}
+
+// System Event Tracking for Achievements
+model SystemEvent {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  userId      String
+  eventType   String
+  eventSource String
+  metadata    Json?
+  processed   Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([eventSource])
+  @@index([processed])
+  @@index([createdAt])
+}
+
+// Level Configuration
+model LevelConfig {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  level       Int      @unique
+  xpRequired  Int
+  runeReward  Int      @default(0)
+  title       String?
+  description String?
+  metadata    Json?
+
+  @@index([level])
+}
+
+// Leaderboard Snapshot (for performance)
+model LeaderboardSnapshot {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  userId    String
+  username  String?
+  level     Int
+  xp        Int
+  runes     Int
+  achievements Int
+  rank      Int
+  change    Int?     // Change in rank since last snapshot
+  metadata  Json?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, createdAt])
+  @@index([userId])
+  @@index([rank])
+  @@index([createdAt])
+}
+
+// Add relation to User model
+model User {
+  // Existing fields...
+  
+  // Gamification relations
+  userXP              UserXP?
+  systemEvents        SystemEvent[]
+  leaderboardSnapshots LeaderboardSnapshot[]
+}

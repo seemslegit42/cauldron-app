@@ -1,0 +1,151 @@
+// Migration to enhance AI reasoning schema
+// This extends the existing models rather than replacing them
+
+// Enhance AIReasoning model with additional fields
+model AIReasoning {
+  // Keep all existing fields
+  
+  // Add new fields
+  reasoningChain     Json?           // Structured chain-of-thought reasoning
+  confidenceScore    Float?          // Overall confidence score (0-1)
+  executionGraph     Json?           // Execution graph for complex reasoning
+  contextSources     Json?           // Sources of context used in reasoning
+  alternativePaths   Json?           // Alternative reasoning paths considered
+  
+  // Add new relations (these will be defined below)
+  reasoningSteps     AIReasoningStep[]
+  contextItems       AIContextItem[]
+  evaluations        AIEvaluation[]
+}
+
+// New model: AIReasoningStep for detailed step-by-step reasoning
+model AIReasoningStep {
+  id                String      @id @default(uuid())
+  createdAt         DateTime    @default(now())
+  reasoningId       String
+  stepNumber        Int
+  stepType          String      // e.g., "thought", "observation", "action", "decision"
+  content           String      // The actual content of this reasoning step
+  tokens            Int?        // Token count for this step
+  duration          Int?        // Duration in milliseconds
+  metadata          Json?       // Additional metadata for this step
+  reasoning         AIReasoning @relation(fields: [reasoningId], references: [id], onDelete: Cascade)
+
+  @@index([reasoningId])
+  @@index([stepType])
+}
+
+// New model: AIContextItem for tracking context used in reasoning
+model AIContextItem {
+  id                String      @id @default(uuid())
+  createdAt         DateTime    @default(now())
+  reasoningId       String
+  contextType       String      // e.g., "user_history", "document", "database_record"
+  content           String      // The context content
+  source            String      // Source of the context
+  relevanceScore    Float?      // How relevant this context was (0-1)
+  metadata          Json?
+  reasoning         AIReasoning @relation(fields: [reasoningId], references: [id])
+
+  @@index([reasoningId])
+  @@index([contextType])
+  @@index([source])
+}
+
+// New model: AIEvaluation for tracking quality metrics
+model AIEvaluation {
+  id                String      @id @default(uuid())
+  createdAt         DateTime    @default(now())
+  reasoningId       String
+  metricType        String      // e.g., "relevance", "accuracy", "helpfulness", "safety"
+  score             Float       // Score from 0-1
+  evaluatedBy       String      // User ID or system ID
+  evaluationMethod  String      // e.g., "human", "automated", "model-based"
+  notes             String?
+  metadata          Json?
+  reasoning         AIReasoning @relation(fields: [reasoningId], references: [id])
+
+  @@index([reasoningId])
+  @@index([metricType])
+  @@index([evaluatedBy])
+}
+
+// Enhance AIPrompt model with additional fields
+model AIPrompt {
+  // Keep all existing fields
+  
+  // Add new fields
+  promptVersion     String?     // Version tracking for prompt evolution
+  promptHash        String?     // Hash for deduplication and reference
+  parentPromptId    String?     // For tracking prompt evolution
+  derivedFromId     String?     // For tracking prompt derivation
+  usageStats        Json?       // Statistics on prompt usage
+  
+  // Add new relations
+  parentPrompt      AIPrompt?   @relation("PromptEvolution", fields: [parentPromptId], references: [id])
+  childPrompts      AIPrompt[]  @relation("PromptEvolution")
+  derivedFrom       AIPrompt?   @relation("PromptDerivation", fields: [derivedFromId], references: [id])
+  derivatives       AIPrompt[]  @relation("PromptDerivation")
+  safetyChecks      AIPromptSafetyCheck[]
+}
+
+// New model: AIPromptSafetyCheck for tracking safety evaluations
+model AIPromptSafetyCheck {
+  id                String      @id @default(uuid())
+  createdAt         DateTime    @default(now())
+  promptId          String
+  checkType         String      // e.g., "toxicity", "bias", "harmful_instructions"
+  score             Float       // Score from 0-1
+  passed            Boolean
+  details           Json?       // Detailed check results
+  prompt            AIPrompt    @relation(fields: [promptId], references: [id])
+
+  @@index([promptId])
+  @@index([checkType])
+  @@index([passed])
+}
+
+// Enhance AIResponseNode model with additional fields
+model AIResponseNode {
+  // Keep all existing fields
+  
+  // Add new fields
+  sourceReasoningStep String?   // Reference to the reasoning step that generated this
+  confidenceScore    Float?     // Confidence score for this specific node
+  alternativeResponses Json?    // Alternative responses considered
+  
+  // Add new relations
+  annotations       AIResponseAnnotation[]
+}
+
+// New model: AIResponseAnnotation for feedback and corrections
+model AIResponseAnnotation {
+  id                String        @id @default(uuid())
+  createdAt         DateTime      @default(now())
+  responseNodeId    String
+  annotationType    String        // e.g., "correction", "improvement", "error"
+  content           String        // The annotation content
+  suggestedOutput   String?       // Suggested alternative output
+  annotatedBy       String        // User ID who created the annotation
+  status            String        @default("pending")
+  metadata          Json?
+  responseNode      AIResponseNode @relation(fields: [responseNodeId], references: [id])
+
+  @@index([responseNodeId])
+  @@index([annotationType])
+  @@index([annotatedBy])
+  @@index([status])
+}
+
+// Enhance AISession model with additional fields
+model AISession {
+  // Keep all existing fields
+  
+  // Add new fields
+  sessionPurpose    String?     // Purpose of this session
+  businessContext   String?     // Business context for this session
+  sessionTags       String[]    // Tags for categorizing sessions
+  qualityScore      Float?      // Overall quality score for the session
+  userSatisfaction  Float?      // User satisfaction score
+  learningOutcomes  Json?       // What was learned from this session
+}

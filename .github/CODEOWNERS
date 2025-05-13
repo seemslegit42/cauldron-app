@@ -1,0 +1,25 @@
+# These owners will be the default owners for everything in the repo.
+# Unless a later match takes precedence, they will be requested for
+# review when someone opens a pull request.
+* @cauldron-app/maintainers
+
+# App core
+/app/src/ @cauldron-app/core-team
+
+# Backend and database
+/app/prisma/ @cauldron-app/backend-team
+/app/src/api/ @cauldron-app/backend-team
+
+# Frontend
+/app/src/components/ @cauldron-app/frontend-team
+/app/src/pages/ @cauldron-app/frontend-team
+
+# Testing
+/e2e-tests/ @cauldron-app/qa-team
+
+# Documentation
+/blog/ @cauldron-app/docs-team
+/context-docs/ @cauldron-app/docs-team
+
+# CI/CD and DevOps
+/.github/ @cauldron-app/devops-team

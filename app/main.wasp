@@ -1,0 +1,2381 @@
+app cauldron-app {
+  wasp: {
+    version: "^0.16.0"
+  },
+
+  title: "Cauldron",
+
+  head: [
+    "<meta charset='utf-8' />",
+    "<meta name='description' content='Cauldron - A modular, AI-native, sentient Digital Operations Platform' />",
+    "<meta name='author' content='BitBrew' />",
+    "<meta name='keywords' content='ai, enterprise, os, sentient, dashboard, cybersecurity, content creation, agent orchestration' />",
+
+    "<meta property='og:type' content='website' />",
+    "<meta property='og:title' content='Cauldron' />",
+    "<meta property='og:site_name' content='Cauldron' />",
+    "<meta property='og:url' content='https://cauldron.io' />",
+    "<meta property='og:description' content='Cauldron - A modular, AI-native, sentient enterprise OS' />",
+    "<meta property='og:image' content='https://cauldron.io/public-banner.webp' />",
+    "<meta name='twitter:image' content='https://cauldron.io/public-banner.webp' />",
+    "<meta name='twitter:image:width' content='800' />",
+    "<meta name='twitter:image:height' content='400' />",
+    "<meta name='twitter:card' content='summary_large_image' />",
+    // TODO: You can put your Plausible analytics scripts below (https://docs.opensaas.sh/guides/analytics/):
+    // NOTE: Plausible does not use Cookies, so you can simply add the scripts here.
+    // Google, on the other hand, does, so you must instead add the script dynamically
+    // via the Cookie Consent component after the user clicks the "Accept" cookies button.
+    "<script defer data-domain='<your-site-id>' src='https://plausible.io/js/script.js'></script>",  // for production
+    "<script defer data-domain='<your-site-id>' src='https://plausible.io/js/script.local.js'></script>",  // for development
+  ],
+
+  // 🔐 Auth out of the box! https://wasp.sh/docs/auth/overview
+  auth: {
+    userEntity: User,
+    methods: {
+      // NOTE: If you decide to not use email auth, make sure to also delete the related routes and pages below.
+      //   (RequestPasswordReset(Route|Page), PasswordReset(Route|Page), EmailVerification(Route|Page))
+      email: {
+        fromField: {
+          name: "Open SaaS App",
+          email: "me@example.com"
+        },
+        emailVerification: {
+          clientRoute: EmailVerificationRoute,
+          getEmailContentFn: import { getVerificationEmailContent } from "@src/modules/auth/email-and-pass/emails",
+        },
+        passwordReset: {
+          clientRoute: PasswordResetRoute,
+          getEmailContentFn: import { getPasswordResetEmailContent } from "@src/modules/auth/email-and-pass/emails",
+        },
+        userSignupFields: import { getEmailUserFields } from "@src/modules/auth/utils/userSignupFields",
+      },
+      // Uncomment to enable Google Auth (check https://wasp.sh/docs/auth/social-auth/google for setup instructions):
+      // google: { // Guide for setting up Auth via Google
+      //   userSignupFields: import { getGoogleUserFields } from "@src/modules/auth/utils/userSignupFields",
+      //   configFn: import { getGoogleAuthConfig } from "@src/modules/auth/utils/userSignupFields",
+      // },
+      // Uncomment to enable GitHub Auth (check https://wasp.sh/docs/auth/social-auth/github for setup instructions):
+      // gitHub: {
+      //   userSignupFields: import { getGitHubUserFields } from "@src/modules/auth/utils/userSignupFields",
+      //   configFn: import { getGitHubAuthConfig } from "@src/modules/auth/utils/userSignupFields",
+      // },
+      // Uncomment to enable Discord Auth (check https://wasp.sh/docs/auth/social-auth/discord for setup instructions):
+      // discord: {
+      //   userSignupFields: import { getDiscordUserFields } from "@src/modules/auth/utils/userSignupFields",
+      //   configFn: import { getDiscordAuthConfig } from "@src/modules/auth/utils/userSignupFields"
+      // }
+    },
+    onAuthFailedRedirectTo: "/login",
+    onAuthSucceededRedirectTo: "/cauldron-prime",
+  },
+
+  db: {
+    // Run `wasp db seed` to seed the database with the seed functions below:
+    seeds: [
+      // Comprehensive database seeding with environment-specific configurations
+      import { seedDatabase } from "@prisma/seeds/index",
+    ]
+  },
+
+  client: {
+    rootComponent: import App from "@src/client/App",
+  },
+
+  emailSender: {
+    // NOTE: "Dummy" provider is just for local development purposes.
+    //   Make sure to check the server logs for the email confirmation url (it will not be sent to an address)!
+    //   Once you are ready for production, switch to e.g. "SendGrid" or "Mailgun" providers. Check out https://docs.opensaas.sh/guides/email-sending/ .
+    provider: Dummy,
+    defaultFrom: {
+      name: "Open SaaS App",
+      // When using a real provider, e.g. SendGrid, you must use the same email address that you configured your account to send out emails with!
+      email: "me@example.com"
+    },
+  },
+}
+
+route LandingPageRoute { path: "/", to: LandingPage }
+page LandingPage {
+  component: import LandingPage from "@src/landing-page/LandingPage"
+}
+
+//#region Auth Pages
+route LoginRoute { path: "/login", to: LoginPage }
+page LoginPage {
+  component: import Login from "@src/modules/auth/pages/LoginPage"
+}
+
+route SignupRoute { path: "/signup", to: SignupPage }
+page SignupPage {
+  component: import { Signup } from "@src/modules/auth/pages/SignupPage"
+}
+
+route RequestPasswordResetRoute { path: "/request-password-reset", to: RequestPasswordResetPage }
+page RequestPasswordResetPage {
+  component: import { RequestPasswordResetPage } from "@src/modules/auth/email-and-pass/RequestPasswordResetPage",
+}
+
+route PasswordResetRoute { path: "/password-reset", to: PasswordResetPage }
+page PasswordResetPage {
+  component: import { PasswordResetPage } from "@src/modules/auth/email-and-pass/PasswordResetPage",
+}
+
+route EmailVerificationRoute { path: "/email-verification", to: EmailVerificationPage }
+page EmailVerificationPage {
+  component: import { EmailVerificationPage } from "@src/modules/auth/email-and-pass/EmailVerificationPage",
+}
+//#endregion
+
+//#region User
+route AccountRoute { path: "/account", to: AccountPage }
+page AccountPage {
+  authRequired: true,
+  component: import Account from "@src/modules/user/pages/AccountPage"
+}
+
+query getPaginatedUsers {
+  fn: import { getPaginatedUsers } from "@src/modules/user/api/operations",
+  entities: [User]
+}
+
+action updateIsUserAdminById {
+  fn: import { updateIsUserAdminById } from "@src/modules/user/api/operations",
+  entities: [User]
+}
+//#endregion
+
+
+
+//#region Payment
+route PricingPageRoute { path: "/pricing", to: PricingPage }
+page PricingPage {
+  component: import PricingPage from "@src/modules/payment/pages/PricingPage"
+}
+
+route CheckoutRoute { path: "/checkout", to: CheckoutPage }
+page CheckoutPage {
+  authRequired: true,
+  component: import Checkout from "@src/modules/payment/pages/CheckoutPage"
+}
+
+query getCustomerPortalUrl {
+  fn: import { getCustomerPortalUrl } from  "@src/modules/payment/api/operations",
+  entities: [User]
+}
+
+action generateCheckoutSession {
+  fn: import { generateCheckoutSession } from "@src/modules/payment/api/operations",
+  entities: [User]
+}
+
+api paymentsWebhook {
+  fn: import { paymentsWebhook } from "@src/modules/payment/api/webhook",
+  entities: [User],
+  middlewareConfigFn: import { paymentsMiddlewareConfigFn } from "@src/modules/payment/api/webhook",
+  httpRoute: (POST, "/payments-webhook")
+}
+//#endregion
+
+//#region File Upload
+route FileUploadRoute { path: "/file-upload", to: FileUploadPage }
+page FileUploadPage {
+  authRequired: true,
+  component: import FileUpload from "@src/modules/file-upload/pages/FileUploadPage"
+}
+
+action createFile {
+  fn: import { createFile } from "@src/modules/file-upload/api/operations",
+  entities: [User, File]
+}
+
+query getAllFilesByUser {
+  fn: import { getAllFilesByUser } from "@src/modules/file-upload/api/operations",
+  entities: [User, File]
+}
+
+query getDownloadFileSignedURL {
+  fn: import { getDownloadFileSignedURL } from "@src/modules/file-upload/api/operations",
+  entities: [User, File]
+}
+//#endregion
+
+//#region Analytics
+query getDailyStats {
+  fn: import { getDailyStats } from "@src/modules/analytics/api/operations",
+  entities: [User, DailyStats]
+}
+
+job dailyStatsJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { calculateDailyStats } from "@src/modules/analytics/api/stats"
+  },
+  schedule: {
+    cron: "0 * * * *" // every hour. useful in production
+    // cron: "* * * * *" // every minute. useful for debugging
+  },
+  entities: [User, DailyStats, Logs, PageViewSource]
+}
+//#endregion
+
+//#region Admin Dashboard
+route AdminRoute { path: "/admin", to: AlchemicalAdminDashboardPage }
+page AlchemicalAdminDashboardPage {
+  authRequired: true,
+  component: import AlchemicalAdminDashboardPage from "@src/admin/dashboards/AlchemicalAdminDashboardPage"
+}
+
+route AdminAnalyticsRoute { path: "/admin/analytics", to: AnalyticsDashboardPage }
+page AnalyticsDashboardPage {
+  authRequired: true,
+  component: import AnalyticsDashboardPage from "@src/admin/dashboards/analytics/AnalyticsDashboardPage"
+}
+
+route AdminUsersRoute { path: "/admin/users", to: AdminUsersPage }
+page AdminUsersPage {
+  authRequired: true,
+  component: import AdminUsers from "@src/admin/dashboards/users/UsersDashboardPage"
+}
+
+route AdminSettingsRoute { path: "/admin/settings", to: AdminSettingsPage }
+page AdminSettingsPage {
+  authRequired: true,
+  component: import AdminSettings from "@src/admin/elements/settings/SettingsPage"
+}
+
+route AdminRBACRoute { path: "/admin/rbac", to: AdminRBACPage }
+page AdminRBACPage {
+  authRequired: true,
+  component: import RBACDashboard from "@src/admin/RBACDashboardPage"
+}
+
+route AdminArchivesRoute { path: "/admin/archives", to: AdminArchivesPage }
+page AdminArchivesPage {
+  authRequired: true,
+  component: import ArchivesDashboard from "@src/modules/sentinel/pages/ArchivesDashboardPage"
+}
+
+route AdminDatabaseRoute { path: "/admin/database", to: QueryPerformancePage }
+page QueryPerformancePage {
+  authRequired: true,
+  component: import QueryPerformancePage from "@src/admin/dashboards/database/QueryPerformancePage"
+}
+
+route AdminAIBenchmarkRoute { path: "/admin/ai-benchmark", to: AIBenchmarkPage }
+page AIBenchmarkPage {
+  authRequired: true,
+  component: import AIBenchmarkPage from "@src/admin/dashboards/ai/AIBenchmarkPage"
+}
+
+route AdminAgentQueryRoute { path: "/admin/agent-query", to: AgentQueryDashboardPage }
+page AgentQueryDashboardPage {
+  authRequired: true,
+  component: import AgentQueryDashboardPage from "@src/admin/dashboards/agent-query/AgentQueryDashboardPage"
+}
+
+route AdminFeedbackRoute { path: "/admin/feedback", to: FeedbackDashboardPage }
+page FeedbackDashboardPage {
+  authRequired: true,
+  component: import FeedbackDashboardPage from "@src/admin/dashboards/feedback/FeedbackDashboardPage"
+}
+
+route AdminChartsRoute { path: "/admin/chart", to: AdminChartsPage }
+page AdminChartsPage {
+  authRequired: true,
+  component: import AdminCharts from "@src/admin/elements/charts/ChartsPage"
+}
+
+route AdminFormElementsRoute { path: "/admin/forms/form-elements", to: AdminFormElementsPage }
+page AdminFormElementsPage {
+  authRequired: true,
+  component: import AdminForms from "@src/admin/elements/forms/FormElementsPage"
+}
+
+route AdminFormLayoutsRoute { path: "/admin/forms/form-layouts", to: AdminFormLayoutsPage }
+page AdminFormLayoutsPage {
+  authRequired: true,
+  component: import AdminForms from "@src/admin/elements/forms/FormLayoutsPage"
+}
+
+route AdminCalendarRoute { path: "/admin/calendar", to: AdminCalendarPage }
+page AdminCalendarPage {
+  authRequired: true,
+  component: import AdminCalendar from "@src/admin/elements/calendar/CalendarPage"
+}
+
+route AdminUIAlertsRoute { path: "/admin/ui/alerts", to: AdminUIAlertsPage }
+page AdminUIAlertsPage {
+  authRequired: true,
+  component: import AdminUI from "@src/admin/elements/ui-elements/AlertsPage"
+}
+
+route AdminUIButtonsRoute { path: "/admin/ui/buttons", to: AdminUIButtonsPage }
+page AdminUIButtonsPage {
+  authRequired: true,
+  component: import AdminUI from "@src/admin/elements/ui-elements/ButtonsPage"
+}
+
+route NotFoundRoute { path: "*", to: NotFoundPage }
+page NotFoundPage {
+  component: import { NotFoundPage } from "@src/client/components/NotFoundPage"
+}
+//#endregion
+
+//#region Contact Form Messages
+// TODO:
+// add functionality to allow users to send messages to admin
+// and make them accessible via the admin dashboard
+route AdminMessagesRoute { path: "/admin/messages", to: AdminMessagesPage }
+page AdminMessagesPage {
+  authRequired: true,
+  component: import AdminMessages from "@src/modules/messages/pages/MessagesPage"
+}
+//#endregion
+
+//#region Cauldron Modules
+// Arcana UI - Sentient dashboard
+route ArcanaRoute { path: "/arcana", to: ArcanaPage }
+page ArcanaPage {
+  authRequired: true,
+  component: import ArcanaUI from "@src/modules/arcana/pages/ArcanaPage"
+}
+
+route ArcanaNewRoute { path: "/arcana-new", to: ArcanaNewPage }
+page ArcanaNewPage {
+  authRequired: true,
+  component: import ArcanaNewUI from "@src/modules/arcana/pages/ArcanaPageNew"
+}
+
+route ArcanaSettingsRoute { path: "/arcana/settings", to: ArcanaSettingsPage }
+page ArcanaSettingsPage {
+  authRequired: true,
+  component: import ArcanaSettings from "@src/modules/arcana/pages/SettingsPage"
+}
+
+route SentientLoopRoute { path: "/arcana/sentient-loop", to: SentientLoopPage }
+page SentientLoopPage {
+  authRequired: true,
+  component: import SentientLoopDashboard from "@src/modules/arcana/pages/SentientLoopPage"
+}
+
+route SentientCheckpointsRoute { path: "/arcana/sentient-loop/checkpoints", to: SentientCheckpointsPage }
+page SentientCheckpointsPage {
+  authRequired: true,
+  component: import SentientCheckpoints from "@src/modules/arcana/pages/CheckpointsPage"
+}
+
+route SentientConfigRoute { path: "/arcana/sentient-loop/config", to: SentientConfigPage }
+page SentientConfigPage {
+  authRequired: true,
+  component: import SentientConfig from "@src/modules/arcana/pages/ConfigPage"
+}
+
+route SentientFeedbackGraphRoute { path: "/arcana/sentient-loop/feedback-graph", to: SentientFeedbackGraphPage }
+page SentientFeedbackGraphPage {
+  authRequired: true,
+  component: import FeedbackGraphPage from "@src/modules/arcana/pages/FeedbackGraphPage"
+}
+
+route SentientFailureRecoveryRoute { path: "/arcana/sentient-loop/failure-recovery", to: SentientFailureRecoveryPage }
+page SentientFailureRecoveryPage {
+  authRequired: true,
+  component: import FailureRecoveryPage from "@src/modules/arcana/pages/FailureRecoveryPage"
+}
+
+route QueryApprovalRoute { path: "/arcana/query-approval", to: QueryApprovalPage }
+page QueryApprovalPage {
+  authRequired: true,
+  component: import QueryApprovalPage from "@src/modules/arcana/pages/QueryApprovalPage"
+}
+
+route PersonasRoute { path: "/arcana/personas", to: PersonasPage }
+page PersonasPage {
+  authRequired: true,
+  component: import PersonasPage from "@src/modules/arcana/pages/PersonasPage"
+}
+
+
+// Forgeflow Module
+route ForgeflowVisualBuilderRoute { path: "/forgeflow/visual-builder", to: VisualBuilderPage }
+page VisualBuilderPage {
+  authRequired: true,
+  component: import VisualBuilderPage from "@src/modules/forgeflow/pages/VisualBuilderPage"
+}
+
+route ForgeflowVisualBuilderDetailRoute { path: "/forgeflow/visual-builder/:workflowId", to: VisualBuilderPage }
+page VisualBuilderDetailPage {
+  authRequired: true,
+  component: import VisualBuilderPage from "@src/modules/forgeflow/pages/VisualBuilderPage"
+}
+
+query getAgentTemplates {
+  fn: import { getAgentTemplates } from "@src/modules/forgeflow/api/operations",
+  entities: [User]
+}
+
+query getWorkflowTemplates {
+  fn: import { getWorkflowTemplates } from "@src/modules/forgeflow/api/operations",
+  entities: [User]
+}
+
+query getWorkflowDesign {
+  fn: import { getWorkflowDesign } from "@src/modules/forgeflow/api/operations",
+  entities: [User]
+}
+
+query getVisualWorkflows {
+  fn: import { getVisualWorkflows } from "@src/modules/forgeflow/api/operations",
+  entities: [User]
+}
+
+action saveWorkflowDesign {
+  fn: import { saveWorkflowDesign } from "@src/modules/forgeflow/api/operations",
+  entities: [User]
+}
+
+// Forgeflow LangGraph
+route LangGraphTestRoute { path: "/forgeflow/langgraph-test", to: LangGraphTestPage }
+page LangGraphTestPage {
+  authRequired: true,
+  component: import { LangGraphTestPage } from "@src/modules/forgeflow/pages/LangGraphTestPage"
+}
+
+route LangGraphDashboardRoute { path: "/forgeflow/langgraph", to: LangGraphDashboardPage }
+page LangGraphDashboardPage {
+  authRequired: true,
+  component: import { LangGraphDashboardPage } from "@src/modules/forgeflow/pages/LangGraphDashboardPage"
+}
+
+route LangGraphExecutionDetailRoute { path: "/forgeflow/langgraph/:executionId", to: LangGraphDashboardPage }
+page LangGraphExecutionDetailPage {
+  authRequired: true,
+  component: import { LangGraphDashboardPage } from "@src/modules/forgeflow/pages/LangGraphDashboardPage"
+}
+
+route LangGraphExecutionRoute { path: "/forgeflow/execution/:executionId", to: LangGraphExecutionPage }
+page LangGraphExecutionPage {
+  authRequired: true,
+  component: import { LangGraphExecutionPage } from "@src/modules/forgeflow/pages/LangGraphExecutionPage"
+}
+
+route MemoryAwareWorkflowRoute { path: "/forgeflow/memory-workflow", to: MemoryAwareWorkflowPage }
+page MemoryAwareWorkflowPage {
+  authRequired: true,
+  component: import { MemoryAwareWorkflowPage } from "@src/modules/forgeflow/pages/MemoryAwareWorkflowPage"
+}
+
+// Memory-Aware Workflow Operations
+action executeMemoryAwareWorkflow {
+  fn: import { executeMemoryAwareWorkflowOperation } from "@src/modules/forgeflow/api/memoryAwareWorkflowOperations",
+  entities: [User, EnhancedMemoryEntry, EnhancedLangGraphState]
+}
+
+query getMemoryAwareWorkflowExecution {
+  fn: import { getMemoryAwareWorkflowExecution } from "@src/modules/forgeflow/api/memoryAwareWorkflowOperations",
+  entities: [User, EnhancedLangGraphState, EnhancedLangGraphNode, EnhancedLangGraphEdge, EnhancedLangGraphNodeExecution]
+}
+
+// Sentient Loop Operations
+query getPendingCheckpoints {
+  fn: import { getPendingCheckpoints } from "@src/modules/arcana/api/sentientLoopOperations",
+  entities: [User]
+}
+
+query getSentientLoopConfig {
+  fn: import { getSentientLoopConfig } from "@src/modules/arcana/api/sentientLoopOperations",
+  entities: [User]
+}
+
+query getLoopPerformanceMetrics {
+  fn: import { getLoopPerformanceMetrics } from "@src/modules/arcana/api/operations",
+  entities: [User, SentientCheckpoint, SentientMemorySnapshot, SentientEscalation, SentientDecisionTrace]
+}
+
+// Sentient Query Operations
+query getPendingQueryRequests {
+  fn: import { getPendingQueryRequests } from "@src/modules/arcana/api/sentientQueryOperations",
+  entities: [User, AgentQueryRequest, AI_Agent]
+}
+
+query getQueryRequestDetails {
+  fn: import { getQueryRequestDetails } from "@src/modules/arcana/api/sentientQueryOperations",
+  entities: [User, AgentQueryRequest, AI_Agent, QueryLog]
+}
+
+action approveQueryRequest {
+  fn: import { approveQueryRequest } from "@src/modules/arcana/api/sentientQueryOperations",
+  entities: [User, AgentQueryRequest, AI_Agent]
+}
+
+action rejectQueryRequest {
+  fn: import { rejectQueryRequest } from "@src/modules/arcana/api/sentientQueryOperations",
+  entities: [User, AgentQueryRequest]
+}
+
+action modifyQueryRequest {
+  fn: import { modifyQueryRequest } from "@src/modules/arcana/api/sentientQueryOperations",
+  entities: [User, AgentQueryRequest]
+}
+
+query getQueryPerformanceMetrics {
+  fn: import { getQueryPerformanceMetrics } from "@src/modules/arcana/api/queryPerformanceOperations",
+  entities: [User, AgentQueryRequest, QueryLog, QueryCache]
+}
+
+query getModulePerformanceMetrics {
+  fn: import { getModulePerformanceMetrics } from "@src/modules/arcana/api/operations",
+  entities: [User, SentientCheckpoint, SentientMemorySnapshot, SentientEscalation, SentientDecisionTrace]
+}
+
+query getAgentPerformanceMetrics {
+  fn: import { getAgentPerformanceMetrics } from "@src/modules/arcana/api/operations",
+  entities: [User, SentientCheckpoint, SentientMemorySnapshot, SentientEscalation, SentientDecisionTrace]
+}
+
+// Sentient Loop Recovery Operations
+query getFailureStats {
+  fn: import { getFailureStats } from "@src/modules/arcana/api/sentientLoopRecoveryOperations",
+  entities: [User]
+}
+
+query getRecoveryOptions {
+  fn: import { getRecoveryOptions } from "@src/modules/arcana/api/sentientLoopRecoveryOperations",
+  entities: [User]
+}
+
+action acknowledgeFailure {
+  fn: import { acknowledgeFailure } from "@src/modules/arcana/api/sentientLoopRecoveryOperations",
+  entities: [User]
+}
+
+action executeRecoveryAction {
+  fn: import { executeRecoveryAction } from "@src/modules/arcana/api/sentientLoopRecoveryOperations",
+  entities: [User]
+}
+
+action updateRecoveryConfig {
+  fn: import { updateRecoveryConfig } from "@src/modules/arcana/api/sentientLoopRecoveryOperations",
+  entities: [User]
+}
+
+action updateSentientLoopConfig {
+  fn: import { updateSentientLoopConfig } from "@src/modules/arcana/api/sentientLoopOperations",
+  entities: [User]
+}
+
+action resolveCheckpoint {
+  fn: import { resolveCheckpoint } from "@src/modules/arcana/api/sentientLoopOperations",
+  entities: [User]
+}
+
+action createCheckpoint {
+  fn: import { createCheckpoint } from "@src/modules/arcana/api/sentientLoopOperations",
+  entities: [User]
+}
+
+action createMemorySnapshot {
+  fn: import { createMemorySnapshot } from "@src/modules/arcana/api/sentientLoopOperations",
+  entities: [User]
+}
+
+action createEscalation {
+  fn: import { createEscalation } from "@src/modules/arcana/api/sentientLoopOperations",
+  entities: [User]
+}
+
+action recordDecisionTrace {
+  fn: import { recordDecisionTrace } from "@src/modules/arcana/api/sentientLoopOperations",
+  entities: [User]
+}
+
+action processAgentAction {
+  fn: import { processAgentAction } from "@src/modules/arcana/api/sentientLoopOperations",
+  entities: [User]
+}
+
+// Sentient Loop™ API Hooks for Developers
+action submitDecision {
+  fn: import { submitDecision } from "@src/api/routes/sentientLoop/submitDecision",
+  entities: [User, SentientCheckpoint]
+}
+
+action contributeMemory {
+  fn: import { contributeMemory } from "@src/api/routes/sentientLoop/contributeMemory",
+  entities: [User, SentientMemorySnapshot]
+}
+
+query getCheckpoints {
+  fn: import { getCheckpoints } from "@src/api/routes/sentientLoop/getCheckpoints",
+  entities: [User, SentientCheckpoint]
+}
+
+query getEscalations {
+  fn: import { getEscalations } from "@src/api/routes/sentientLoop/getEscalations",
+  entities: [User, SentientEscalation]
+}
+
+action registerWebhook {
+  fn: import { registerWebhook } from "@src/api/routes/sentientLoop/registerWebhook",
+  entities: [User, SentientLoopWebhook]
+}
+
+action updateWebhook {
+  fn: import { updateWebhook } from "@src/api/routes/sentientLoop/manageWebhook",
+  entities: [User, SentientLoopWebhook]
+}
+
+action deleteWebhook {
+  fn: import { deleteWebhook } from "@src/api/routes/sentientLoop/manageWebhook",
+  entities: [User, SentientLoopWebhook]
+}
+
+// LangGraph Operations
+action executeThreatResearchWorkflow {
+  fn: import { executeThreatResearchWorkflow } from "@src/modules/forgeflow/api/operations",
+  entities: [User, Workflow, WorkflowExecution, LangGraphState]
+}
+
+query getLangGraphState {
+  fn: import { getLangGraphState } from "@src/modules/forgeflow/api/langGraphOperations",
+  entities: [User, LangGraphState, NodeExecution]
+}
+
+query getWorkflowExecutionById {
+  fn: import { getWorkflowExecutionById } from "@src/modules/forgeflow/api/langGraphOperations",
+  entities: [User, Workflow, WorkflowExecution, LangGraphState]
+}
+
+query getWorkflowExecutionsForWorkflow {
+  fn: import { getWorkflowExecutionsForWorkflow } from "@src/modules/forgeflow/api/langGraphOperations",
+  entities: [User, Workflow, WorkflowExecution, LangGraphState]
+}
+
+query getUserWorkflowExecutions {
+  fn: import { getUserWorkflowExecutions } from "@src/modules/forgeflow/api/langGraphOperations",
+  entities: [User, Workflow, WorkflowExecution, LangGraphState]
+}
+
+query listWebhooks {
+  fn: import { listWebhooks } from "@src/api/routes/sentientLoop/manageWebhook",
+  entities: [User, SentientLoopWebhook, WebhookDelivery]
+}
+
+// Phantom - Red/White team cyber dashboard
+route PhantomRoute { path: "/phantom", to: PhantomPage }
+page PhantomPage {
+  authRequired: true,
+  component: import PhantomDashboard from "@src/modules/phantom/pages/PhantomPage"
+}
+
+route PhantomNewRoute { path: "/phantom-new", to: PhantomNewPage }
+page PhantomNewPage {
+  authRequired: true,
+  component: import PhantomNewUI from "@src/modules/phantom/pages/PhantomPageNew"
+}
+
+route PhantomTestRoute { path: "/phantom-test", to: PhantomTestPage }
+page PhantomTestPage {
+  authRequired: true,
+  component: import PhantomTest from "@src/modules/phantom/pages/TestPage"
+}
+
+route PhantomSettingsRoute { path: "/phantom/settings", to: PhantomSettingsPage }
+page PhantomSettingsPage {
+  authRequired: true,
+  component: import PhantomSettings from "@src/modules/phantom/pages/SettingsPage"
+}
+
+// Obelisk - OSINT Engine
+route ObeliskRoute { path: "/obelisk/*", to: ObeliskPage }
+page ObeliskPage {
+  authRequired: true,
+  component: import ObeliskModule from "@src/modules/obelisk/pages/ObeliskPage"
+}
+
+// Manifold - Revenue Intelligence Engine
+route ManifoldRoute { path: "/manifold", to: ManifoldPage }
+page ManifoldPage {
+  authRequired: true,
+  component: import ManifoldStudio from "@src/modules/manifold/pages/ManifoldPage"
+}
+
+route ManifoldSettingsRoute { path: "/manifold/settings", to: ManifoldSettingsPage }
+page ManifoldSettingsPage {
+  authRequired: true,
+  component: import ManifoldSettings from "@src/modules/manifold/pages/SettingsPage"
+}
+
+// Manifold Revenue Operations
+action createRevenueStream {
+  fn: import { createRevenueStream } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream]
+}
+
+action updateRevenueStream {
+  fn: import { updateRevenueStream } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream]
+}
+
+action deleteRevenueStream {
+  fn: import { deleteRevenueStream } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream]
+}
+
+query getRevenueStreams {
+  fn: import { getRevenueStreams } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream]
+}
+
+query getRevenueStreamById {
+  fn: import { getRevenueStreamById } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream, Transaction, RevenueMetric]
+}
+
+action createTransaction {
+  fn: import { createTransaction } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream, Transaction]
+}
+
+action updateTransaction {
+  fn: import { updateTransaction } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream, Transaction]
+}
+
+action deleteTransaction {
+  fn: import { deleteTransaction } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream, Transaction]
+}
+
+query getTransactions {
+  fn: import { getTransactions } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream, Transaction]
+}
+
+action createRevenueMetric {
+  fn: import { createRevenueMetric } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream, RevenueMetric]
+}
+
+action updateRevenueMetric {
+  fn: import { updateRevenueMetric } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream, RevenueMetric]
+}
+
+action deleteRevenueMetric {
+  fn: import { deleteRevenueMetric } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream, RevenueMetric]
+}
+
+query getRevenueMetrics {
+  fn: import { getRevenueMetrics } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream, RevenueMetric]
+}
+
+action createRevenueAlert {
+  fn: import { createRevenueAlert } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueAlert]
+}
+
+action markRevenueAlertAsRead {
+  fn: import { markRevenueAlertAsRead } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueAlert]
+}
+
+action deleteRevenueAlert {
+  fn: import { deleteRevenueAlert } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueAlert]
+}
+
+query getRevenueAlerts {
+  fn: import { getRevenueAlerts } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueAlert]
+}
+
+action createRevenueInsight {
+  fn: import { createRevenueInsight } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueInsight]
+}
+
+action archiveRevenueInsight {
+  fn: import { archiveRevenueInsight } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueInsight]
+}
+
+action deleteRevenueInsight {
+  fn: import { deleteRevenueInsight } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueInsight]
+}
+
+query getRevenueInsights {
+  fn: import { getRevenueInsights } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueInsight]
+}
+
+query getRevenueDashboard {
+  fn: import { getRevenueDashboard } from "@src/modules/manifold/api/operations",
+  entities: [User, RevenueStream, Transaction, RevenueMetric, RevenueAlert, RevenueInsight]
+}
+
+// Manifold Blog Post Generation
+action generateBlogPost {
+  fn: import { generateBlogPost } from "@src/modules/manifold/api/operations",
+  entities: [User]
+}
+
+action saveBlogPost {
+  fn: import { saveBlogPost } from "@src/modules/manifold/api/operations",
+  entities: [User]
+}
+
+// Forgeflow - Visual no-code Agent Builder
+route ForgeflowRoute { path: "/forgeflow", to: ForgeflowPage }
+page ForgeflowPage {
+  authRequired: true,
+  component: import ForgeflowBuilder from "@src/modules/forgeflow/pages/ForgeflowPage"
+}
+
+route ForgeflowSettingsRoute { path: "/forgeflow/settings", to: ForgeflowSettingsPage }
+page ForgeflowSettingsPage {
+  authRequired: true,
+  component: import ForgeflowSettings from "@src/modules/forgeflow/pages/SettingsPage"
+}
+
+route AutogenStudioRoute { path: "/forgeflow/autogen-studio", to: AutogenStudioPage }
+page AutogenStudioPage {
+  authRequired: true,
+  component: import { AutogenStudioPage } from "@src/modules/forgeflow/pages/AutogenStudioPage"
+}
+
+// Sentinel - Cybersecurity posture module
+route SentinelRoute { path: "/sentinel", to: SentinelPage }
+page SentinelPage {
+  authRequired: true,
+  component: import { SentinelPage } from "@src/modules/sentinel/pages"
+}
+
+route SentinelSettingsRoute { path: "/sentinel/settings", to: SentinelSettingsPage }
+page SentinelSettingsPage {
+  authRequired: true,
+  component: import SentinelSettings from "@src/modules/sentinel/pages/SettingsPage"
+}
+
+// Athena - Business intelligence & decision-making copilot
+route AthenaRoute { path: "/athena", to: AthenaPage }
+page AthenaPage {
+  authRequired: true,
+  component: import AthenaDashboard from "@src/modules/athena/pages/AthenaPage"
+}
+
+route AthenaSettingsRoute { path: "/athena/settings", to: AthenaSettingsPage }
+page AthenaSettingsPage {
+  authRequired: true,
+  component: import AthenaSettings from "@src/modules/athena/pages/SettingsPage"
+}
+
+route ExecutiveAdvisorRoute { path: "/athena/executive-advisor", to: ExecutiveAdvisorPage }
+page ExecutiveAdvisorPage {
+  authRequired: true,
+  component: import ExecutiveAdvisor from "@src/modules/athena/pages/ExecutiveAdvisorPage"
+}
+
+// Logging Dashboard
+route LoggingDashboardRoute { path: "/admin/logs", to: LoggingDashboardPage }
+page LoggingDashboardPage {
+  authRequired: true,
+  component: import LoggingDashboardPage from "@src/modules/logging/pages/LoggingDashboardPage"
+}
+
+// Confirmations Dashboard
+route ConfirmationsRoute { path: "/admin/confirmations", to: ConfirmationsPage }
+page ConfirmationsPage {
+  authRequired: true,
+  component: import { ConfirmationsPage } from "@src/admin/pages/ConfirmationsPage"
+}
+
+route ConfirmationDetailRoute { path: "/admin/confirmations/:id", to: ConfirmationDetailPage }
+page ConfirmationDetailPage {
+  authRequired: true,
+  component: import { ConfirmationDetailPage } from "@src/admin/pages/ConfirmationDetailPage"
+}
+
+// Trigger Tracking Dashboard
+route TriggerTrackingRoute { path: "/admin/triggers", to: TriggerTrackingPage }
+page TriggerTrackingPage {
+  authRequired: true,
+  component: import { TriggerTrackingPage } from "@src/admin/pages/TriggerTrackingPage"
+}
+
+route TriggerDetailRoute { path: "/admin/triggers/:id", to: TriggerDetailPage }
+page TriggerDetailPage {
+  authRequired: true,
+  component: import { TriggerDetailPage } from "@src/admin/pages/TriggerDetailPage"
+}
+
+// Database Query Performance Monitoring
+query getQueryPerformanceStats {
+  fn: import { getQueryPerformanceStats } from "@src/server/queries/queryAnalytics",
+  entities: [User, QueryLog, QueryExecutionPlan]
+}
+
+query getQueryExecutionPlan {
+  fn: import { getQueryExecutionPlan } from "@src/server/queries/queryAnalytics",
+  entities: [User, QueryExecutionPlan]
+}
+
+query getQueryPerformanceMetrics {
+  fn: import { getQueryPerformanceMetrics } from "@src/server/queries/queryAnalytics",
+  entities: [User, QueryPerformanceMetric]
+}
+
+// Agent Query System Operations
+action createSchemaMap {
+  fn: import { createSchemaMap } from "@src/api/routes/agentQuery/createSchemaMap",
+  entities: [User, SchemaMap]
+}
+
+action updateSchemaMap {
+  fn: import { updateSchemaMap } from "@src/api/routes/agentQuery/updateSchemaMap",
+  entities: [User, SchemaMap]
+}
+
+query getSchemaMap {
+  fn: import { getSchemaMap } from "@src/api/routes/agentQuery/getSchemaMap",
+  entities: [User, SchemaMap]
+}
+
+query listSchemaMaps {
+  fn: import { listSchemaMaps } from "@src/api/routes/agentQuery/listSchemaMaps",
+  entities: [User, SchemaMap]
+}
+
+action createAgentQueryPermission {
+  fn: import { createAgentQueryPermission } from "@src/api/routes/agentQuery/createAgentQueryPermission",
+  entities: [User, AI_Agent, SchemaMap, AgentQueryPermission]
+}
+
+action updateAgentQueryPermission {
+  fn: import { updateAgentQueryPermission } from "@src/api/routes/agentQuery/updateAgentQueryPermission",
+  entities: [User, AI_Agent, SchemaMap, AgentQueryPermission]
+}
+
+action createQueryTemplate {
+  fn: import { createQueryTemplate } from "@src/api/routes/agentQuery/createQueryTemplate",
+  entities: [User, QueryTemplate]
+}
+
+action updateQueryTemplate {
+  fn: import { updateQueryTemplate } from "@src/api/routes/agentQuery/updateQueryTemplate",
+  entities: [User, QueryTemplate]
+}
+
+action processQueryRequest {
+  fn: import { processQueryRequest } from "@src/api/routes/agentQuery/processQueryRequest",
+  entities: [User, AI_Agent, AgentQueryRequest]
+}
+
+action createQueryRequest {
+  fn: import { createQueryRequest } from "@src/api/routes/agentQuery/createQueryRequest",
+  entities: [User, AI_Agent, AgentQueryRequest]
+}
+
+query getQueryRequest {
+  fn: import { getQueryRequest } from "@src/api/routes/agentQuery/getQueryRequest",
+  entities: [User, AI_Agent, AgentQueryRequest]
+}
+
+query listQueryRequests {
+  fn: import { listQueryRequests } from "@src/api/routes/agentQuery/listQueryRequests",
+  entities: [User, AI_Agent, AgentQueryRequest]
+}
+
+query getQueryResult {
+  fn: import { getQueryResult } from "@src/api/routes/agentQuery/getQueryResult",
+  entities: [User, AI_Agent, AgentQueryRequest]
+}
+
+// RBAC Operations
+query getRoles {
+  fn: import { getRoles } from "@src/api/routes/roles/roleManagement",
+  entities: [User, Role, RolePermission, Permission]
+}
+
+query getRole {
+  fn: import { getRole } from "@src/api/routes/roles/roleManagement",
+  entities: [User, Role, RolePermission, Permission]
+}
+
+action createRole {
+  fn: import { createRole } from "@src/api/routes/roles/roleManagement",
+  entities: [User, Role]
+}
+
+action updateRole {
+  fn: import { updateRole } from "@src/api/routes/roles/roleManagement",
+  entities: [User, Role]
+}
+
+action deleteRole {
+  fn: import { deleteRole } from "@src/api/routes/roles/roleManagement",
+  entities: [User, Role]
+}
+
+query getPermissions {
+  fn: import { getPermissions } from "@src/api/routes/roles/rolePermissions",
+  entities: [User, Permission]
+}
+
+action assignPermissionToRole {
+  fn: import { assignPermissionToRole } from "@src/api/routes/roles/rolePermissions",
+  entities: [User, Role, Permission, RolePermission]
+}
+
+action removePermissionFromRole {
+  fn: import { removePermissionFromRole } from "@src/api/routes/roles/rolePermissions",
+  entities: [User, Role, Permission, RolePermission]
+}
+
+query getPermissionCacheStats {
+  fn: import { getPermissionCacheStats } from "@src/api/routes/system/permissionCache",
+  entities: [User]
+}
+
+action clearPermissionCacheAction {
+  fn: import { clearPermissionCacheAction } from "@src/api/routes/system/permissionCache",
+  entities: [User]
+}
+
+// AI Operations
+action generateAiResponse {
+  fn: import { generateAiResponse } from "@src/ai-services/operations",
+  entities: [User]
+}
+
+action createAgent {
+  fn: import { createAgent } from "@src/modules/forgeflow/api/operations",
+  entities: [User, Agent]
+}
+
+action executeAgentWorkflow {
+  fn: import { executeAgentWorkflow } from "@src/modules/forgeflow/api/operations",
+  entities: [User, Workflow, WorkflowExecution, Agent]
+}
+
+// AI Benchmarking and Performance Monitoring
+action runBenchmark {
+  fn: import { runBenchmark } from "@src/api/routes/ai/benchmarkInference",
+  entities: [User, AIBenchmark]
+}
+
+query getBenchmarkHistory {
+  fn: import { getBenchmarkHistory } from "@src/api/routes/ai/benchmarkInference",
+  entities: [User, AIBenchmark]
+}
+
+query getPerformanceMetrics {
+  fn: import { getPerformanceMetrics } from "@src/api/routes/ai/benchmarkInference",
+  entities: [User, AIBenchmark, UserTokenUsage, SystemLog]
+}
+
+action createWorkflow {
+  fn: import { createWorkflow } from "@src/modules/forgeflow/api/operations",
+  entities: [User, Workflow, Agent]
+}
+
+query getAgentTemplates {
+  fn: import { getAgentTemplates } from "@src/modules/forgeflow/api/operations",
+  entities: [User]
+}
+
+query getWorkflowTemplates {
+  fn: import { getWorkflowTemplates } from "@src/modules/forgeflow/api/operations",
+  entities: [User]
+}
+
+action saveWorkflowDesign {
+  fn: import { saveWorkflowDesign } from "@src/modules/forgeflow/api/operations",
+  entities: [User, Workflow, WorkflowDesign, WorkflowNode, WorkflowConnection]
+}
+
+query getWorkflowDesign {
+  fn: import { getWorkflowDesign } from "@src/modules/forgeflow/api/operations",
+  entities: [User, Workflow, WorkflowDesign, WorkflowNode, WorkflowConnection]
+}
+
+query getVisualWorkflows {
+  fn: import { getVisualWorkflows } from "@src/modules/forgeflow/api/operations",
+  entities: [User, Workflow, WorkflowDesign]
+}
+
+// Autogen Studio Operations
+action startAutogenStudioServer {
+  fn: import { startAutogenStudioServer } from "@src/modules/forgeflow/api/autogenStudioOperations",
+  entities: [User]
+}
+
+action stopAutogenStudioServer {
+  fn: import { stopAutogenStudioServer } from "@src/modules/forgeflow/api/autogenStudioOperations",
+  entities: [User]
+}
+
+query checkAutogenStudioStatus {
+  fn: import { checkAutogenStudioStatus } from "@src/modules/forgeflow/api/autogenStudioOperations",
+  entities: [User]
+}
+
+query getUserContext {
+  fn: import { getUserContext } from "@src/modules/arcana/api/operations",
+  entities: [User]
+}
+
+query getBusinessMetricsArcana {
+  fn: import { getBusinessMetrics } from "@src/modules/arcana/api/operations",
+  entities: [User]
+}
+
+query getSentientRecommendations {
+  fn: import { getSentientRecommendations } from "@src/modules/arcana/api/operations",
+  entities: [User]
+}
+
+query getActiveWorkflows {
+  fn: import { getActiveWorkflows } from "@src/modules/arcana/api/operations",
+  entities: [User]
+}
+
+action processCommand {
+  fn: import { processCommand } from "@src/modules/arcana/api/operations",
+  entities: [User]
+}
+
+query getUserWidgets {
+  fn: import { getUserWidgets } from "@src/modules/arcana/api/operations",
+  entities: [User]
+}
+
+// Agent Personas Operations
+query getPersonas {
+  fn: import { getPersonas } from "@src/api/routes/personas/personaOperations",
+  entities: [User, AgentPersona, PersonaTrait, PersonaMemoryScope]
+}
+
+query getPersonaById {
+  fn: import { getPersonaById } from "@src/api/routes/personas/personaOperations",
+  entities: [User, AgentPersona, PersonaTrait, PersonaMemoryScope]
+}
+
+action createPersona {
+  fn: import { createPersona } from "@src/api/routes/personas/personaOperations",
+  entities: [User, AgentPersona, PersonaTrait, PersonaMemoryScope]
+}
+
+action updatePersona {
+  fn: import { updatePersona } from "@src/api/routes/personas/personaOperations",
+  entities: [User, AgentPersona, PersonaTrait, PersonaMemoryScope]
+}
+
+action forkPersona {
+  fn: import { forkPersona } from "@src/api/routes/personas/personaOperations",
+  entities: [User, AgentPersona, PersonaTrait, PersonaMemoryScope]
+}
+
+// Persona Traits Operations
+query getTraits {
+  fn: import { getTraits } from "@src/api/routes/personas/traitOperations",
+  entities: [User, PersonaTrait]
+}
+
+query getTraitById {
+  fn: import { getTraitById } from "@src/api/routes/personas/traitOperations",
+  entities: [User, PersonaTrait, AgentPersona]
+}
+
+action createTrait {
+  fn: import { createTrait } from "@src/api/routes/personas/traitOperations",
+  entities: [User, PersonaTrait]
+}
+
+action updateTrait {
+  fn: import { updateTrait } from "@src/api/routes/personas/traitOperations",
+  entities: [User, PersonaTrait]
+}
+
+action deleteTrait {
+  fn: import { deleteTrait } from "@src/api/routes/personas/traitOperations",
+  entities: [User, PersonaTrait, AgentPersona]
+}
+
+action updateUserWidgets {
+  fn: import { updateUserWidgets } from "@src/modules/arcana/api/operations",
+  entities: [User]
+}
+
+action updateDecisionStatus {
+  fn: import { updateDecisionStatus } from "@src/modules/arcana/api/operations",
+  entities: [User]
+}
+
+query getSecurityAlerts {
+  fn: import { getSecurityAlerts } from "@src/modules/sentinel/api/operations",
+  entities: [User, SecurityAlert]
+}
+
+query getSecurityMetrics {
+  fn: import { getSecurityMetrics } from "@src/modules/sentinel/api/operations",
+  entities: [User, SecurityMetric]
+}
+
+query getSecurityRecommendations {
+  fn: import { getSecurityRecommendations } from "@src/modules/sentinel/api/operations",
+  entities: [User, SecurityRecommendation]
+}
+
+query getSecurityScans {
+  fn: import { getSecurityScans } from "@src/modules/sentinel/api/operations",
+  entities: [User, SecurityScan, SecurityAlert, ComplianceCheck]
+}
+
+action runSecurityScan {
+  fn: import { runSecurityScan } from "@src/modules/sentinel/api/operations",
+  entities: [User, SecurityScan]
+}
+
+action acknowledgeAlert {
+  fn: import { acknowledgeAlert } from "@src/modules/sentinel/api/operations",
+  entities: [User, SecurityAlert]
+}
+
+// Athena Business Intelligence Operations
+query getBusinessMetrics {
+  fn: import { getBusinessMetrics } from "@src/modules/athena/api/operations",
+  entities: [User, BusinessMetric]
+}
+
+query getBusinessInsights {
+  fn: import { getBusinessInsights } from "@src/modules/athena/api/operations",
+  entities: [User, BusinessMetric, BusinessInsight, BusinessRecommendation]
+}
+
+query getCampaignSuggestions {
+  fn: import { getCampaignSuggestions } from "@src/modules/athena/api/operations",
+  entities: [User, BusinessInsight, CampaignSuggestion]
+}
+
+query getStrategicDecisions {
+  fn: import { getStrategicDecisions } from "@src/modules/athena/api/operations",
+  entities: [User, BusinessInsight, BusinessRecommendation, StrategicDecision, StrategicOption]
+}
+
+query getMarketData {
+  fn: import { getMarketData } from "@src/modules/athena/api/operations",
+  entities: [User, MarketData]
+}
+
+query getStrategicRecommendations {
+  fn: import { getStrategicRecommendations } from "@src/modules/athena/api/operations",
+  entities: [User, BusinessInsight, MarketData, StrategicRecommendation]
+}
+
+query getExecutiveSummary {
+  fn: import { getExecutiveSummary } from "@src/modules/athena/api/operations",
+  entities: [User, BusinessMetric, BusinessInsight, StrategicRecommendation, ExecutiveSummary]
+}
+
+action exportToNotion {
+  fn: import { exportToNotion } from "@src/modules/athena/api/operations",
+  entities: [User, BusinessMetric, BusinessInsight, StrategicRecommendation, ExecutiveSummary]
+}
+
+query getMarketDataSources {
+  fn: import { getMarketDataSources } from "@src/modules/athena/api/operations",
+  entities: [User, MarketDataSource]
+}
+
+query getMarketDataSourceById {
+  fn: import { getMarketDataSourceById } from "@src/modules/athena/api/operations",
+  entities: [User, MarketDataSource, DataPoint]
+}
+
+action createMarketDataSource {
+  fn: import { createMarketDataSource } from "@src/modules/athena/api/operations",
+  entities: [User, MarketDataSource]
+}
+
+action updateMarketDataSource {
+  fn: import { updateMarketDataSource } from "@src/modules/athena/api/operations",
+  entities: [User, MarketDataSource]
+}
+
+action deleteMarketDataSource {
+  fn: import { deleteMarketDataSource } from "@src/modules/athena/api/operations",
+  entities: [User, MarketDataSource, DataPoint]
+}
+
+action refreshMarketDataSource {
+  fn: import { refreshMarketDataSource } from "@src/modules/athena/api/operations",
+  entities: [User, MarketDataSource, DataPoint, MarketData]
+}
+
+query getExecutiveAdvice {
+  fn: import { getExecutiveAdvice } from "@src/modules/athena/api/operations",
+  entities: [User, BusinessMetric, BusinessInsight, StrategicRecommendation, ExecutiveSummary]
+}
+
+// Logging Operations
+query getSystemLogs {
+  fn: import { getSystemLogs } from "@src/server/queries/logs",
+  entities: [User, SystemLog]
+}
+
+query getAgentLogs {
+  fn: import { getAgentLogs } from "@src/server/queries/logs",
+  entities: [User, AgentLog]
+}
+
+query getApiInteractions {
+  fn: import { getApiInteractions } from "@src/server/queries/logs",
+  entities: [User, ApiInteraction]
+}
+
+query getHumanApprovals {
+  fn: import { getHumanApprovals } from "@src/api/queries/getHumanApprovals",
+  entities: [User, HumanApproval]
+}
+
+query getHumanApprovalById {
+  fn: import { getHumanApprovalById } from "@src/api/queries/getHumanApprovalById",
+  entities: [User, HumanApproval, AI_Agent, SystemLog]
+}
+
+query getConfirmationStats {
+  fn: import { getConfirmationStats } from "@src/api/queries/getConfirmationStats",
+  entities: [User, HumanApproval]
+}
+
+query getRelatedLogs {
+  fn: import { getRelatedLogs } from "@src/server/queries/logs",
+  entities: [User, SystemLog, AgentLog, ApiInteraction, HumanApproval]
+}
+
+action exportLogs {
+  fn: import { exportLogs } from "@src/server/actions/logs",
+  entities: [User, SystemLog, AgentLog, ApiInteraction, HumanApproval]
+}
+
+action updateLogRetentionPolicy {
+  fn: import { updateLogRetentionPolicy } from "@src/server/actions/logs",
+  entities: [User, LogRetentionPolicy]
+}
+
+action processHumanApprovalAction {
+  fn: import { processHumanApprovalAction } from "@src/api/actions/processHumanApprovalAction",
+  entities: [User, HumanApproval]
+}
+
+job logRotationJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { rotateLogsJob } from "@src/server/jobs/logRotation"
+  },
+  schedule: {
+    cron: "0 0 * * *" // daily at midnight
+  },
+  entities: [SystemLog, AgentLog, ApiInteraction, HumanApproval, LogArchive, LogRetentionPolicy, GlobalSettings]
+}
+
+// Log Analytics and Alerts
+query getLogAnalytics {
+  fn: import { getLogAnalytics } from "@src/server/queries/logAnalytics",
+  entities: [User, LogAnalyticsResult]
+}
+
+query getLogInsights {
+  fn: import { getLogInsights } from "@src/server/queries/logAnalytics",
+  entities: [User, LogInsight]
+}
+
+// Agent Trigger Tracking
+query getTriggerStats {
+  fn: import { getTriggerStats } from "@src/api/queries/getTriggerStats",
+  entities: [User, AgentTrigger, TriggerSource]
+}
+
+query getTriggerDetails {
+  fn: import { getTriggerDetails } from "@src/api/queries/getTriggerDetails",
+  entities: [User, AgentTrigger, TriggerSource, AI_Agent, Workflow, WorkflowExecution, TriggerExecutionFlow, SystemLog, AgentLog]
+}
+
+query listTriggers {
+  fn: import { listTriggers } from "@src/api/queries/listTriggers",
+  entities: [User, AgentTrigger, TriggerSource, AI_Agent, Workflow, WorkflowExecution]
+}
+
+action generateLogAnalytics {
+  fn: import { generateLogAnalytics } from "@src/server/actions/logAnalytics",
+  entities: [User, LogAnalyticsResult]
+}
+
+action generateLogInsights {
+  fn: import { generateLogInsights } from "@src/server/actions/logAnalytics",
+  entities: [User, LogInsight]
+}
+
+// Alert Rules
+query getAlertRules {
+  fn: import { getAlertRules } from "@src/server/queries/alerts",
+  entities: [User, AlertRule]
+}
+
+query getAlerts {
+  fn: import { getAlerts } from "@src/server/queries/alerts",
+  entities: [User, Alert]
+}
+
+action createAlertRule {
+  fn: import { createAlertRule } from "@src/server/actions/alerts",
+  entities: [User, AlertRule]
+}
+
+action updateAlertRule {
+  fn: import { updateAlertRule } from "@src/server/actions/alerts",
+  entities: [User, AlertRule]
+}
+
+action deleteAlertRule {
+  fn: import { deleteAlertRule } from "@src/server/actions/alerts",
+  entities: [User, AlertRule]
+}
+
+action acknowledgeAlert {
+  fn: import { acknowledgeAlert } from "@src/server/actions/alerts",
+  entities: [User, Alert]
+}
+
+action resolveAlert {
+  fn: import { resolveAlert } from "@src/server/actions/alerts",
+  entities: [User, Alert]
+}
+
+job evaluateAlertRulesJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { evaluateAlertRulesJob } from "@src/server/jobs/alertRules"
+  },
+  schedule: {
+    cron: "*/15 * * * *" // every 15 minutes
+  },
+  entities: [AlertRule, Alert, SystemLog, AgentLog, ApiInteraction, HumanApproval]
+}
+
+// Agent Feedback Operations
+action submitFeedback {
+  fn: import { submitFeedback } from "@src/api/routes/agents/submitFeedback",
+  entities: [User, AI_Agent, AgentFeedback]
+}
+
+action submitEscalation {
+  fn: import { submitEscalation } from "@src/api/routes/agents/submitEscalation",
+  entities: [User, AI_Agent, AgentEscalation]
+}
+
+// Agent Trust Score Operations
+query getAgentTrustScore {
+  fn: import { getAgentTrustScore } from "@src/api/routes/agents/trustScoreOperations",
+  entities: [User, AI_Agent, AgentTrustScore, EarnedBadge, TrustBadge]
+}
+
+query getBadges {
+  fn: import { getBadges } from "@src/api/routes/agents/trustScoreOperations",
+  entities: [User, TrustBadge]
+}
+
+action createBadge {
+  fn: import { createBadge } from "@src/api/routes/agents/trustScoreOperations",
+  entities: [User, TrustBadge]
+}
+
+action updateBadge {
+  fn: import { updateBadge } from "@src/api/routes/agents/trustScoreOperations",
+  entities: [User, TrustBadge]
+}
+
+action awardBadge {
+  fn: import { awardBadge } from "@src/api/routes/agents/trustScoreOperations",
+  entities: [User, AI_Agent, AgentTrustScore, EarnedBadge, TrustBadge]
+}
+
+action recordTask {
+  fn: import { recordTask } from "@src/api/routes/agents/trustScoreOperations",
+  entities: [User, AI_Agent, AgentTrustScore]
+}
+
+action recordFeedback {
+  fn: import { recordFeedback } from "@src/api/routes/agents/trustScoreOperations",
+  entities: [User, AI_Agent, AgentTrustScore]
+}
+
+action addXp {
+  fn: import { addXp } from "@src/api/routes/agents/trustScoreOperations",
+  entities: [User, AI_Agent, AgentTrustScore]
+}
+
+query getFeedback {
+  fn: import { getFeedback } from "@src/api/routes/agents/getFeedback",
+  entities: [User, AI_Agent, AgentFeedback]
+}
+
+query getEscalations {
+  fn: import { getEscalations } from "@src/api/routes/agents/getEscalations",
+  entities: [User, AI_Agent, AgentEscalation]
+}
+
+// Cauldron Prime - AI CEO Core Module
+route CauldronPrimeRoute { path: "/cauldron-prime", to: CauldronPrimePage }
+page CauldronPrimePage {
+  component: import CauldronPrimePage from "@src/modules/cauldron-prime/pages/CauldronPrimePage",
+  authRequired: true
+}
+
+query getSentientSnapshot {
+  fn: import { getSentientSnapshot } from "@src/modules/cauldron-prime/api/operations",
+  entities: [User, DailyStats, Signal, DataSource, Workflow, WorkflowExecution, MemoryEntry]
+}
+
+query getExecutiveStack {
+  fn: import { getExecutiveStack } from "@src/modules/cauldron-prime/api/operations",
+  entities: [User, MemoryEntry]
+}
+
+query getCEOPreferencesForUser {
+  fn: import { getCEOPreferencesForUser } from "@src/modules/cauldron-prime/api/operations",
+  entities: [User, MemoryEntry]
+}
+
+action updateCEOPreferencesForUser {
+  fn: import { updateCEOPreferencesForUser } from "@src/modules/cauldron-prime/api/operations",
+  entities: [User, MemoryEntry]
+}
+
+action executeDecisionAction {
+  fn: import { executeDecisionAction } from "@src/modules/cauldron-prime/api/operations",
+  entities: [User, MemoryEntry, Signal, DataSource, Workflow, WorkflowExecution]
+}
+
+action askCEOQuestion {
+  fn: import { askCEOQuestion } from "@src/modules/cauldron-prime/api/operations",
+  entities: [User, MemoryEntry, Signal, DataSource, Workflow, WorkflowExecution]
+}
+//#endregion
+
+//#region Gamification Module
+// Gamification Routes
+route GamificationDashboardRoute { path: "/gamification", to: GamificationDashboardPage }
+page GamificationDashboardPage {
+  component: import GamificationDashboardPage from "@src/modules/gamification/pages/GamificationDashboardPage",
+  authRequired: true
+}
+
+route AchievementsRoute { path: "/achievements", to: AchievementsPage }
+page AchievementsPage {
+  component: import AchievementsPage from "@src/modules/gamification/pages/AchievementsPage",
+  authRequired: true
+}
+
+route RewardsRoute { path: "/rewards", to: RewardsPage }
+page RewardsPage {
+  component: import RewardsPage from "@src/modules/gamification/pages/RewardsPage",
+  authRequired: true
+}
+
+route LeaderboardRoute { path: "/leaderboard", to: LeaderboardPage }
+page LeaderboardPage {
+  component: import LeaderboardPage from "@src/modules/gamification/pages/LeaderboardPage",
+  authRequired: true
+}
+
+route OperatorProfileRoute { path: "/operator-profile", to: OperatorProfilePage }
+page OperatorProfilePage {
+  component: import OperatorProfilePage from "@src/modules/gamification/pages/OperatorProfilePage",
+  authRequired: true
+}
+
+// Gamification API Operations
+query getUserXP {
+  fn: import { getUserXP } from "@src/modules/gamification/api/operations",
+  entities: [User, UserXP, XPTransaction, RuneTransaction]
+}
+
+query getAchievements {
+  fn: import { getAchievements } from "@src/modules/gamification/api/operations",
+  entities: [User, UserXP, Achievement, UserAchievement]
+}
+
+query getRewards {
+  fn: import { getRewards } from "@src/modules/gamification/api/operations",
+  entities: [User, UserXP, Reward, UserReward]
+}
+
+query getLeaderboard {
+  fn: import { getLeaderboard } from "@src/modules/gamification/api/operations",
+  entities: [User, LeaderboardSnapshot]
+}
+
+action earnXP {
+  fn: import { earnXP } from "@src/modules/gamification/api/operations",
+  entities: [User, UserXP, XPTransaction, RuneTransaction, LevelConfig]
+}
+
+action purchaseReward {
+  fn: import { purchaseReward } from "@src/modules/gamification/api/operations",
+  entities: [User, UserXP, Reward, UserReward, RuneTransaction]
+}
+
+action trackSystemEvent {
+  fn: import { trackSystemEvent } from "@src/modules/gamification/api/operations",
+  entities: [User, SystemEvent, UserXP, UserAchievement, Achievement]
+}
+
+// Gamification Jobs
+job updateLeaderboardJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { updateLeaderboardJob } from "@src/modules/gamification/api/jobs"
+  },
+  schedule: {
+    cron: "0 * * * *" // hourly
+  },
+  entities: [User, UserXP, LeaderboardSnapshot]
+}
+
+job expireRewardsJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { expireRewardsJob } from "@src/modules/gamification/api/jobs"
+  },
+  schedule: {
+    cron: "0 0 * * *" // daily at midnight
+  },
+  entities: [User, UserXP, UserReward, Reward, RuneTransaction]
+}
+
+job processSystemEventsJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { processSystemEventsJob } from "@src/modules/gamification/api/jobs"
+  },
+  schedule: {
+    cron: "*/15 * * * *" // every 15 minutes
+  },
+  entities: [User, SystemEvent, UserXP, UserAchievement, Achievement]
+}
+
+//#endregion
+
+//#region Obelisk OSINT Module
+// OSINT Source Operations
+action createOsintSource {
+  fn: import { createOsintSource } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintSource]
+}
+
+action updateOsintSource {
+  fn: import { updateOsintSource } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintSource]
+}
+
+action deleteOsintSource {
+  fn: import { deleteOsintSource } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintSource, OsintFinding, OsintAlert]
+}
+
+query getOsintSources {
+  fn: import { getOsintSources } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintSource]
+}
+
+query getOsintSourceById {
+  fn: import { getOsintSourceById } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintSource, OsintFinding]
+}
+
+// OSINT Finding Operations
+action createOsintFinding {
+  fn: import { createOsintFinding } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintSource, OsintFinding]
+}
+
+action updateOsintFinding {
+  fn: import { updateOsintFinding } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintSource, OsintFinding]
+}
+
+action deleteOsintFinding {
+  fn: import { deleteOsintFinding } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintSource, OsintFinding, OsintAlert]
+}
+
+query getOsintFindings {
+  fn: import { getOsintFindings } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintSource, OsintFinding]
+}
+
+query getOsintFindingById {
+  fn: import { getOsintFindingById } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintSource, OsintFinding, OsintAlert]
+}
+
+// OSINT Alert Operations
+action createOsintAlert {
+  fn: import { createOsintAlert } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintFinding, OsintAlert]
+}
+
+action updateOsintAlert {
+  fn: import { updateOsintAlert } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintAlert]
+}
+
+action deleteOsintAlert {
+  fn: import { deleteOsintAlert } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintAlert]
+}
+
+query getOsintAlerts {
+  fn: import { getOsintAlerts } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintFinding, OsintAlert]
+}
+
+query getOsintAlertById {
+  fn: import { getOsintAlertById } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintFinding, OsintAlert]
+}
+
+// OSINT Scan Job Operations
+action createOsintScanJob {
+  fn: import { createOsintScanJob } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintScanJob]
+}
+
+action updateOsintScanJob {
+  fn: import { updateOsintScanJob } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintScanJob]
+}
+
+action deleteOsintScanJob {
+  fn: import { deleteOsintScanJob } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintScanJob]
+}
+
+query getOsintScanJobs {
+  fn: import { getOsintScanJobs } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintScanJob]
+}
+
+query getOsintScanJobById {
+  fn: import { getOsintScanJobById } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintScanJob]
+}
+
+// OSINT Webhook Operations
+action createOsintWebhook {
+  fn: import { createOsintWebhook } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintWebhook]
+}
+
+action updateOsintWebhook {
+  fn: import { updateOsintWebhook } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintWebhook]
+}
+
+action deleteOsintWebhook {
+  fn: import { deleteOsintWebhook } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintWebhook]
+}
+
+query getOsintWebhooks {
+  fn: import { getOsintWebhooks } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintWebhook]
+}
+
+query getOsintWebhookById {
+  fn: import { getOsintWebhookById } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintWebhook]
+}
+
+// Dashboard Operations
+query getOsintDashboardStats {
+  fn: import { getOsintDashboardStats } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintSource, OsintFinding, OsintAlert, OsintScanJob]
+}
+
+// Helper Operations
+action generateFindingSummary {
+  fn: import { generateFindingSummary } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintFinding]
+}
+
+action forwardAlertToModule {
+  fn: import { forwardAlertToModule } from "@src/modules/obelisk/api/operations",
+  entities: [User, OsintAlert]
+}
+
+// Scheduled Jobs
+job osintScanJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { runScheduledOsintScans } from "@src/modules/obelisk/api/operations"
+  },
+  schedule: {
+    cron: "0 */6 * * *" // every 6 hours
+  },
+  entities: [User, OsintSource, OsintFinding, OsintAlert, OsintScanJob]
+}
+
+// Maintenance Jobs
+job staleLogCleanupJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { staleLogCleanupJob } from "@src/server/jobs/staleLogCleanup"
+  },
+  schedule: {
+    cron: "0 2 * * *" // daily at 2 AM
+  },
+  entities: [SystemLog, AgentLog, ApiInteraction, HumanApproval, LogArchive, GlobalSettings, MaintenanceJob, SecurityMetric]
+}
+
+job dataArchivingJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { dataArchivingJob } from "@src/server/jobs/dataArchiving"
+  },
+  schedule: {
+    cron: "0 3 * * *" // daily at 3 AM
+  },
+  entities: [MemoryEntry, Signal, LogArchive, GlobalSettings, MaintenanceJob, SecurityMetric]
+}
+
+job auditSnapshotRotationJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { auditSnapshotRotationJob } from "@src/server/jobs/auditSnapshotRotation"
+  },
+  schedule: {
+    cron: "0 4 * * 0" // weekly on Sunday at 4 AM
+  },
+  entities: [TaskAudit, HumanApproval, ApiInteraction, TelemetrySpan, LogArchive, GlobalSettings, MaintenanceJob, SecurityMetric]
+}
+
+// Collaboration Archive Operations
+action createCollaborationArchive {
+  fn: import { createCollaborationArchive } from "@src/modules/sentinel/api/collaborationArchiveOperations",
+  entities: [User, CollaborationArchive, ArchiveContent]
+}
+
+action verifyCollaborationArchive {
+  fn: import { verifyCollaborationArchive } from "@src/modules/sentinel/api/collaborationArchiveOperations",
+  entities: [User, CollaborationArchive, ArchiveVerification, ArchiveAccessLog]
+}
+
+query getCollaborationArchives {
+  fn: import { getCollaborationArchives } from "@src/modules/sentinel/api/collaborationArchiveOperations",
+  entities: [User, CollaborationArchive, ArchiveVerification, ArchiveAccessLog]
+}
+
+query getCollaborationArchiveContent {
+  fn: import { getCollaborationArchiveContent } from "@src/modules/sentinel/api/collaborationArchiveOperations",
+  entities: [User, CollaborationArchive, ArchiveContent, ArchiveAccessLog]
+}
+
+job archiveRotationJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { archiveRotationJob } from "@src/modules/sentinel/jobs/archiveRotation"
+  },
+  schedule: {
+    cron: "0 3 * * 0" // weekly on Sunday at 3 AM
+  },
+  entities: [CollaborationArchive, ArchiveContent, ArchiveVerification, ArchiveAccessLog, ArchiveRetentionPolicy, GlobalSettings, MaintenanceJob]
+}
+
+job metricsRegenerationJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { metricsRegenerationJob } from "@src/server/jobs/metricsRegeneration"
+  },
+  schedule: {
+    cron: "0 5 * * *" // daily at 5 AM
+  },
+  entities: [SecurityMetric, BusinessMetric, GrowthMetric, RevenueMetric, LogInsight, GlobalSettings, MaintenanceJob, SecurityAlert, SecurityScan]
+}
+
+job queryMetricsAggregationJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { aggregateQueryMetricsJob } from "@src/server/jobs/queryMetricsAggregation"
+  },
+  schedule: {
+    cron: "0 */1 * * *" // every hour
+  },
+  entities: [QueryLog, QueryExecutionPlan, QueryPerformanceMetric, MaintenanceJob]
+}
+//#endregion
+
+//#region Phantom Cybersecurity Module
+// Security Dashboard
+query getSecurityDashboard {
+  fn: import { getSecurityDashboard } from "@src/modules/phantom/api/operations",
+  entities: [User]
+}
+
+// Security Scan
+action runSecurityScan {
+  fn: import { runSecurityScan } from "@src/modules/phantom/api/operations",
+  entities: [User]
+}
+
+// Domain Monitoring
+action addDomainToMonitoring {
+  fn: import { addDomainToMonitoring } from "@src/modules/phantom/api/operations",
+  entities: [User]
+}
+
+// Threat Monitoring
+action createThreatFeed {
+  fn: import { createThreatFeed } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatFeed]
+}
+
+action updateThreatFeed {
+  fn: import { updateThreatFeed } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatFeed]
+}
+
+action deleteThreatFeed {
+  fn: import { deleteThreatFeed } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatFeed]
+}
+
+query getThreatFeeds {
+  fn: import { getThreatFeeds } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatFeed]
+}
+
+query getThreatFeedById {
+  fn: import { getThreatFeedById } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatFeed]
+}
+
+action refreshThreatFeed {
+  fn: import { refreshThreatFeed } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatFeed]
+}
+
+// Threat Monitors
+action createThreatMonitor {
+  fn: import { createThreatMonitor } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatMonitor]
+}
+
+action updateThreatMonitor {
+  fn: import { updateThreatMonitor } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatMonitor]
+}
+
+action deleteThreatMonitor {
+  fn: import { deleteThreatMonitor } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatMonitor]
+}
+
+query getThreatMonitors {
+  fn: import { getThreatMonitors } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatMonitor]
+}
+
+query getThreatMonitorById {
+  fn: import { getThreatMonitorById } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatMonitor]
+}
+
+// Brand Alerts
+action createBrandAlert {
+  fn: import { createBrandAlert } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, BrandAlert, ThreatMonitor, ThreatFeed]
+}
+
+action updateBrandAlert {
+  fn: import { updateBrandAlert } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, BrandAlert]
+}
+
+action deleteBrandAlert {
+  fn: import { deleteBrandAlert } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, BrandAlert]
+}
+
+query getBrandAlerts {
+  fn: import { getBrandAlerts } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, BrandAlert, ThreatMonitor, ThreatFeed]
+}
+
+query getBrandAlertById {
+  fn: import { getBrandAlertById } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, BrandAlert, ThreatMonitor, ThreatFeed]
+}
+
+// CVE Alerts
+action createCVEAlert {
+  fn: import { createCVEAlert } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, CVEAlert, ThreatFeed]
+}
+
+action updateCVEAlert {
+  fn: import { updateCVEAlert } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, CVEAlert]
+}
+
+action deleteCVEAlert {
+  fn: import { deleteCVEAlert } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, CVEAlert]
+}
+
+query getCVEAlerts {
+  fn: import { getCVEAlerts } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, CVEAlert, ThreatFeed]
+}
+
+query getCVEAlertById {
+  fn: import { getCVEAlertById } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, CVEAlert, ThreatFeed]
+}
+
+// Phishing Vectors
+action createPhishingVector {
+  fn: import { createPhishingVector } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, PhishingVector, ThreatFeed]
+}
+
+action updatePhishingVector {
+  fn: import { updatePhishingVector } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, PhishingVector]
+}
+
+action deletePhishingVector {
+  fn: import { deletePhishingVector } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, PhishingVector]
+}
+
+query getPhishingVectors {
+  fn: import { getPhishingVectors } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, PhishingVector, ThreatFeed]
+}
+
+query getPhishingVectorById {
+  fn: import { getPhishingVectorById } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, PhishingVector, ThreatFeed]
+}
+
+// Threat Intelligence
+action createThreatIntelligence {
+  fn: import { createThreatIntelligence } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatIntelligence, ThreatFeed]
+}
+
+action updateThreatIntelligence {
+  fn: import { updateThreatIntelligence } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatIntelligence]
+}
+
+action deleteThreatIntelligence {
+  fn: import { deleteThreatIntelligence } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatIntelligence]
+}
+
+query getThreatIntelligence {
+  fn: import { getThreatIntelligence } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatIntelligence, ThreatFeed]
+}
+
+query getThreatIntelligenceById {
+  fn: import { getThreatIntelligenceById } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatIntelligence, ThreatFeed]
+}
+
+// Sentinel Log Integration
+action createSentinelLogIntegration {
+  fn: import { createSentinelLogIntegration } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, SentinelLogIntegration]
+}
+
+action updateSentinelLogIntegration {
+  fn: import { updateSentinelLogIntegration } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, SentinelLogIntegration]
+}
+
+action deleteSentinelLogIntegration {
+  fn: import { deleteSentinelLogIntegration } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, SentinelLogIntegration]
+}
+
+query getSentinelLogIntegrations {
+  fn: import { getSentinelLogIntegrations } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, SentinelLogIntegration]
+}
+
+query getSentinelLogIntegrationById {
+  fn: import { getSentinelLogIntegrationById } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, SentinelLogIntegration]
+}
+
+// Threat Monitoring Dashboard
+query getThreatMonitoringDashboard {
+  fn: import { getThreatMonitoringDashboard } from "@src/modules/phantom/api/threatMonitoring",
+  entities: [User, ThreatFeed, ThreatMonitor, BrandAlert, CVEAlert, PhishingVector, ThreatIntelligence, SentinelLogIntegration]
+}
+
+// Security Dashboard
+query getSecurityDashboard {
+  fn: import { getSecurityDashboard } from "@src/modules/phantom/api/operations",
+  entities: [User]
+}
+
+// Security Scan
+action runSecurityScan {
+  fn: import { runSecurityScan } from "@src/modules/phantom/api/operations",
+  entities: [User]
+}
+
+// Domain Monitoring
+action addDomainToMonitoring {
+  fn: import { addDomainToMonitoring } from "@src/modules/phantom/api/operations",
+  entities: [User]
+}
+
+// Scheduled Jobs
+job refreshThreatFeedsJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { refreshThreatFeedsJob } from "@src/modules/phantom/api/threatMonitoring"
+  },
+  schedule: {
+    cron: "0 */4 * * *" // every 4 hours
+  },
+  entities: [User, ThreatFeed, BrandAlert, CVEAlert, PhishingVector, ThreatIntelligence]
+}
+
+job syncSentinelLogsJob {
+  executor: PgBoss,
+  perform: {
+    fn: import { syncSentinelLogsJob } from "@src/modules/phantom/api/threatMonitoring"
+  },
+  schedule: {
+    cron: "*/15 * * * *" // every 15 minutes
+  },
+  entities: [User, SentinelLogIntegration, SecurityAlert, SecurityScan, ComplianceCheck]
+}
+//#endregion
+
+//#region Agent Configuration Operations
+// Agent Configuration operations
+query getAgentConfig {
+  fn: import { getAgentConfigOperation } from "@src/shared/api/agentConfigOperations.js",
+  entities: [User, ModuleConfig, AI_Agent]
+}
+
+action updateAgentConfig {
+  fn: import { updateAgentConfigOperation } from "@src/shared/api/agentConfigOperations.js",
+  entities: [User, ModuleConfig, AI_Agent]
+}
+
+action previewAgentConfig {
+  fn: import { previewAgentConfigOperation } from "@src/shared/api/agentConfigOperations.js",
+  entities: [User, ModuleConfig, AI_Agent]
+}
+
+action resetAgentConfig {
+  fn: import { resetAgentConfigOperation } from "@src/shared/api/agentConfigOperations.js",
+  entities: [User, ModuleConfig, AI_Agent]
+}
+
+// Agent Trust operations
+query getAgentTrustScore {
+  fn: import { getAgentTrustScore } from "@src/api/routes/agents/getAgentTrustScore.js",
+  entities: [User, AI_Agent, AgentTrustScore, EarnedBadge, TrustBadge]
+}
+
+query getAgentBadges {
+  fn: import { getAgentBadges } from "@src/api/routes/agents/getAgentBadges.js",
+  entities: [User, AI_Agent, TrustBadge, EarnedBadge]
+}
+
+action recordAgentTask {
+  fn: import { recordAgentTask } from "@src/api/routes/agents/recordAgentTask.js",
+  entities: [User, AI_Agent, AgentTrustScore, EarnedBadge, TrustBadge, XpHistoryEntry]
+}
+
+action addAgentXp {
+  fn: import { addAgentXp } from "@src/api/routes/agents/addAgentXp.js",
+  entities: [User, AI_Agent, AgentTrustScore, XpHistoryEntry]
+}
+
+action awardAgentBadge {
+  fn: import { awardAgentBadge } from "@src/api/routes/agents/awardAgentBadge.js",
+  entities: [User, AI_Agent, AgentTrustScore, EarnedBadge, TrustBadge, XpHistoryEntry]
+}
+
+action submitAgentFeedback {
+  fn: import { submitAgentFeedback } from "@src/api/routes/agents/submitAgentFeedback.js",
+  entities: [User, AI_Agent, AgentTrustScore, AgentFeedback, XpHistoryEntry]
+}
+
+action submitAgentEscalation {
+  fn: import { submitAgentEscalation } from "@src/api/routes/agents/submitAgentEscalation.js",
+  entities: [User, AI_Agent, AgentEscalation, SystemLog, Notification]
+}
+
+// Agent Management Routes
+route AgentDetailsRoute { path: "/agents/:agentId", to: AgentDetailsPage }
+page AgentDetailsPage {
+  authRequired: true,
+  component: import AgentDetails from "@src/modules/arcana/pages/AgentDetailsPage"
+}
+
+route AgentCreateRoute { path: "/agents/create", to: AgentCreatePage }
+page AgentCreatePage {
+  authRequired: true,
+  component: import AgentCreate from "@src/modules/arcana/pages/AgentCreatePage"
+}
+
+route AgentTrustRoute { path: "/agents/:agentId/trust", to: AgentTrustPage }
+page AgentTrustPage {
+  authRequired: true,
+  component: import AgentTrust from "@src/modules/arcana/pages/AgentTrustPage"
+}
+//#endregion
+
+//#region Agent Entities
+entity AI_Agent {=psl
+  id                String          @id @default(uuid())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  userId            String
+  name              String
+  description       String
+  type              String          // Type of agent (e.g., "assistant", "analyst", "researcher", "executor")
+  capabilities      String[]        // Array of capabilities
+  model             String          // AI model used (e.g., "gpt-4", "claude-3", "gemini-pro")
+  provider          String          // AI provider (e.g., "openai", "anthropic", "google", "groq")
+  systemPrompt      String          // System prompt for the agent
+  configuration     Json            // Configuration for the agent
+  isActive          Boolean         @default(true)
+  personaId         String?         // Reference to an AgentPersona if this agent uses one
+
+  // Relations
+  user              User            @relation(fields: [userId], references: [id])
+  persona           AgentPersona?   @relation(fields: [personaId], references: [id])
+  logs              AgentLog[]
+  feedback          AgentFeedback[]
+  memories          InteractionMemory[]
+  escalations       AgentEscalation[]
+  alignmentChecks   AlignmentCheck[]
+  taskAudits        TaskAudit[]
+  triggers          AgentTrigger[]
+
+  // Logging and telemetry relations
+  systemLogs        SystemLog[]
+  apiInteractions   ApiInteraction[]
+  humanApprovals    HumanApproval[]
+  telemetrySpans    TelemetrySpan[]
+
+  // Query-related relations
+  queryPermissions  AgentQueryPermission[]
+  queryRequests     AgentQueryRequest[]
+  sentientCheckpoints SentientCheckpoint[]
+
+  // AI Thought Tracing relations
+  thoughtTraces     AIThoughtTrace[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@index([type])
+  @@index([personaId])
+psl}
+
+//#endregion
+
+//#region Agent Persona Entities
+entity AgentPersona {=psl
+  id                String          @id @default(uuid())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  name              String
+  description       String
+  role              String          // Role of the persona (e.g., "Legal Advisor", "Compliance Copilot")
+  category          String          // Category of the persona (e.g., "legal", "compliance", "marketing", "operations")
+  systemPrompt      String          // Base system prompt for the persona
+  isPublic          Boolean         @default(false) // Whether this persona is available in the public library
+  isVerified        Boolean         @default(false) // Whether this persona is verified by the platform
+  version           String          @default("1.0.0") // Semantic versioning
+  createdById       String
+  organizationId    String?
+  forkedFromId      String?         // ID of the persona this was forked from
+
+  // Relations
+  createdBy         User            @relation(fields: [createdById], references: [id])
+  organization      Organization?   @relation(fields: [organizationId], references: [id])
+  forkedFrom        AgentPersona?   @relation("PersonaForks", fields: [forkedFromId], references: [id])
+  forks             AgentPersona[]  @relation("PersonaForks")
+  traits            PersonaTrait[]
+  memoryScopes      PersonaMemoryScope[]
+  agents            AI_Agent[]
+
+  @@unique([name, createdById])
+  @@index([name])
+  @@index([category])
+  @@index([isPublic])
+  @@index([createdById])
+  @@index([organizationId])
+  @@index([forkedFromId])
+psl}
+
+entity PersonaTrait {=psl
+  id                String          @id @default(uuid())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  name              String
+  description       String
+  category          String          // Category of the trait (e.g., "personality", "knowledge", "skill")
+  value             String          // Value of the trait
+  isPublic          Boolean         @default(false) // Whether this trait is available in the public library
+  createdById       String
+
+  // Relations
+  createdBy         User            @relation(fields: [createdById], references: [id])
+  personas          AgentPersona[]
+
+  @@unique([name, createdById])
+  @@index([name])
+  @@index([category])
+  @@index([isPublic])
+  @@index([createdById])
+psl}
+
+entity PersonaMemoryScope {=psl
+  id                String          @id @default(uuid())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  name              String
+  description       String
+  scope             String          // Scope of the memory (e.g., "conversation", "user_preferences", "domain_knowledge")
+  retention         String          // Retention policy (e.g., "session", "user", "organization", "permanent")
+  priority          Int             @default(1) // Priority of the memory scope (1-10)
+  personaId         String
+
+  // Relations
+  persona           AgentPersona    @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@unique([name, personaId])
+  @@index([personaId])
+  @@index([scope])
+  @@index([retention])
+psl}
+//#endregion

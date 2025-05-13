@@ -1,0 +1,122 @@
+// LangGraph Schema Extension
+
+// Enhanced LangGraph State model
+model EnhancedLangGraphState {
+  id                String                      @id @default(uuid())
+  createdAt         DateTime                    @default(now())
+  updatedAt         DateTime                    @updatedAt
+  userId            String?
+  workflowId        String?
+  executionId       String?
+  graphId           String
+  name              String
+  status            LangGraphStateStatus        @default(ACTIVE)
+  state             Json
+  metadata          Json?
+  checkpointedAt    DateTime                    @default(now())
+  expiresAt         DateTime?
+  nodes             EnhancedLangGraphNode[]
+  edges             EnhancedLangGraphEdge[]
+  nodeExecutions    EnhancedLangGraphNodeExecution[]
+  user              User?                       @relation(fields: [userId], references: [id])
+  workflow          Workflow?                   @relation(fields: [workflowId], references: [id])
+  workflowExecution WorkflowExecution?          @relation(fields: [executionId], references: [id])
+
+  @@index([userId])
+  @@index([workflowId])
+  @@index([executionId])
+  @@index([graphId])
+  @@index([status])
+  @@index([checkpointedAt])
+  @@index([expiresAt])
+}
+
+// Enhanced LangGraph Node model
+model EnhancedLangGraphNode {
+  id                String                      @id @default(uuid())
+  createdAt         DateTime                    @default(now())
+  updatedAt         DateTime                    @updatedAt
+  graphStateId      String
+  nodeId            String
+  type              LangGraphNodeType
+  config            Json
+  metadata          Json?
+  position          Json?                       // Position for visualization
+  sourceEdges       EnhancedLangGraphEdge[]     @relation("SourceNode")
+  targetEdges       EnhancedLangGraphEdge[]     @relation("TargetNode")
+  graphState        EnhancedLangGraphState      @relation(fields: [graphStateId], references: [id], onDelete: Cascade)
+  executions        EnhancedLangGraphNodeExecution[]
+
+  @@unique([graphStateId, nodeId])
+  @@index([graphStateId])
+  @@index([type])
+}
+
+// Enhanced LangGraph Edge model
+model EnhancedLangGraphEdge {
+  id                String                      @id @default(uuid())
+  createdAt         DateTime                    @default(now())
+  updatedAt         DateTime                    @updatedAt
+  graphStateId      String
+  sourceNodeId      String
+  targetNodeId      String
+  condition         String?
+  metadata          Json?
+  graphState        EnhancedLangGraphState      @relation(fields: [graphStateId], references: [id], onDelete: Cascade)
+  sourceNode        EnhancedLangGraphNode       @relation("SourceNode", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNode        EnhancedLangGraphNode       @relation("TargetNode", fields: [targetNodeId], references: [id], onDelete: Cascade)
+
+  @@unique([graphStateId, sourceNodeId, targetNodeId])
+  @@index([graphStateId])
+  @@index([sourceNodeId])
+  @@index([targetNodeId])
+}
+
+// Enhanced LangGraph Node Execution model
+model EnhancedLangGraphNodeExecution {
+  id                String                      @id @default(uuid())
+  createdAt         DateTime                    @default(now())
+  graphStateId      String
+  nodeId            String
+  status            LangGraphExecutionStatus    @default(RUNNING)
+  input             Json
+  output            Json?
+  error             String?
+  startedAt         DateTime                    @default(now())
+  completedAt       DateTime?
+  duration          Int?                        // Duration in milliseconds
+  metadata          Json?
+  graphState        EnhancedLangGraphState      @relation(fields: [graphStateId], references: [id], onDelete: Cascade)
+  node              EnhancedLangGraphNode       @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@index([graphStateId])
+  @@index([nodeId])
+  @@index([status])
+  @@index([startedAt])
+  @@index([completedAt])
+}
+
+// Enums for LangGraph
+enum LangGraphStateStatus {
+  ACTIVE
+  COMPLETED
+  FAILED
+  PAUSED
+}
+
+enum LangGraphNodeType {
+  LLM
+  TOOL
+  CONDITION
+  ROUTER
+  MEMORY
+  HUMAN_INPUT
+  DEFAULT
+}
+
+enum LangGraphExecutionStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  WAITING
+}

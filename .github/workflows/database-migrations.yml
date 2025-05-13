@@ -1,0 +1,89 @@
+name: Database Migrations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/prisma/schema.prisma'
+      - 'app/prisma/migrations/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/prisma/schema.prisma'
+      - 'app/prisma/migrations/**'
+
+jobs:
+  validate-migrations:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: cauldron_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./app
+        
+      - name: Create shadow database
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -c "CREATE DATABASE cauldron_shadow;"
+        
+      - name: Validate migrations with shadow database
+        run: npx prisma migrate dev --skip-generate
+        working-directory: ./app
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cauldron_test
+          SHADOW_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cauldron_shadow
+      
+      - name: Check migration status
+        run: |
+          echo "Checking migration status..."
+          npx prisma migrate status
+        working-directory: ./app
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cauldron_test
+  
+  deploy-migrations:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [validate-migrations]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./app
+        
+      - name: Deploy migrations
+        run: npx prisma migrate deploy
+        working-directory: ./app
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

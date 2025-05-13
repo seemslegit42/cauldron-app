@@ -1,0 +1,183 @@
+// AI Reasoning Chain and Prompt History Schema Extension
+// This schema extends the existing AI tracking models to provide more comprehensive
+// tracking of raw prompts, reasoning chains, and response trees for transparency,
+// auditing, and supervised fine-tuning.
+
+// Enhanced AIReasoningStep model to track individual steps in the reasoning process
+model AIReasoningStep {
+  id                String      @id @default(uuid())
+  createdAt         DateTime    @default(now())
+  reasoningId       String
+  stepNumber        Int
+  stepType          String      // e.g., "thought", "observation", "action", "decision"
+  content           String      // The actual content of this reasoning step
+  tokens            Int?        // Token count for this step
+  duration          Int?        // Duration in milliseconds
+  metadata          Json?       // Additional metadata for this step
+  reasoning         AIReasoning @relation(fields: [reasoningId], references: [id], onDelete: Cascade)
+
+  @@index([reasoningId])
+  @@index([stepType])
+  @@index([stepNumber])
+}
+
+// AIPromptTemplate model for storing reusable prompt templates
+model AIPromptTemplate {
+  id                String      @id @default(uuid())
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  name              String
+  description       String?
+  version           String
+  content           String      // The template content with placeholders
+  placeholders      String[]    // Array of placeholder names
+  exampleValues     Json?       // Example values for placeholders
+  module            String
+  category          String?
+  tags              String[]
+  isActive          Boolean     @default(true)
+  safetyScore       Float?
+  estimatedTokens   Int?
+  createdById       String
+  organizationId    String?
+  usageCount        Int         @default(0)
+  lastUsedAt        DateTime?
+  createdBy         User        @relation(fields: [createdById], references: [id])
+  organization      Organization? @relation(fields: [organizationId], references: [id])
+  instances         AIPrompt[]  @relation("TemplateInstances")
+
+  @@index([module])
+  @@index([category])
+  @@index([tags])
+  @@index([createdById])
+  @@index([organizationId])
+}
+
+// Add relation to AIPrompt model
+model AIPrompt {
+  // Existing fields...
+  
+  templateId        String?
+  template          AIPromptTemplate? @relation("TemplateInstances", fields: [templateId], references: [id])
+  templateValues    Json?       // Values used for template placeholders
+  
+  // Add these fields to existing AIPrompt model
+}
+
+// AIFeedbackAnnotation model for annotating reasoning chains for supervised fine-tuning
+model AIFeedbackAnnotation {
+  id                String      @id @default(uuid())
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  reasoningId       String
+  responseNodeId    String?
+  annotationType    String      // e.g., "correction", "improvement", "error", "bias"
+  content           String      // The annotation content
+  suggestedOutput   String?     // Suggested alternative output
+  annotatedBy       String      // User ID who created the annotation
+  status            String      @default("pending") // e.g., "pending", "approved", "rejected"
+  metadata          Json?
+  reasoning         AIReasoning @relation(fields: [reasoningId], references: [id])
+  responseNode      AIResponseNode? @relation(fields: [responseNodeId], references: [id])
+  annotator         User        @relation(fields: [annotatedBy], references: [id])
+
+  @@index([reasoningId])
+  @@index([responseNodeId])
+  @@index([annotationType])
+  @@index([annotatedBy])
+  @@index([status])
+}
+
+// AIEvaluationMetric model for tracking the quality of AI responses
+model AIEvaluationMetric {
+  id                String      @id @default(uuid())
+  createdAt         DateTime    @default(now())
+  reasoningId       String
+  metricType        String      // e.g., "relevance", "accuracy", "helpfulness", "safety"
+  score             Float       // Score from 0 to 1
+  evaluatedBy       String      // User ID or system ID
+  evaluationMethod  String      // e.g., "human", "automated", "model-based"
+  notes             String?
+  metadata          Json?
+  reasoning         AIReasoning @relation(fields: [reasoningId], references: [id])
+
+  @@index([reasoningId])
+  @@index([metricType])
+  @@index([evaluatedBy])
+  @@index([evaluationMethod])
+}
+
+// AIReasoningContext model for storing context used in reasoning
+model AIReasoningContext {
+  id                String      @id @default(uuid())
+  createdAt         DateTime    @default(now())
+  reasoningId       String
+  contextType       String      // e.g., "user_history", "conversation_history", "document", "database"
+  content           String      // The context content
+  source            String      // Source of the context
+  relevanceScore    Float?      // How relevant this context was (0-1)
+  metadata          Json?
+  reasoning         AIReasoning @relation(fields: [reasoningId], references: [id])
+
+  @@index([reasoningId])
+  @@index([contextType])
+  @@index([source])
+}
+
+// AIModelVersion model for tracking model versions used
+model AIModelVersion {
+  id                String      @id @default(uuid())
+  createdAt         DateTime    @default(now())
+  modelName         String      // e.g., "llama3-70b-8192"
+  provider          String      // e.g., "groq", "anthropic", "openai"
+  version           String      // Version identifier
+  capabilities      String[]    // Array of capabilities
+  parameters        Json?       // Model parameters
+  benchmarks        Json?       // Benchmark results
+  isActive          Boolean     @default(true)
+  reasonings        AIReasoning[] @relation("ModelVersionUsed")
+
+  @@unique([modelName, version, provider])
+  @@index([modelName])
+  @@index([provider])
+  @@index([isActive])
+}
+
+// Add relation to AIReasoning model
+model AIReasoning {
+  // Existing fields...
+  
+  modelVersionId    String?
+  modelVersion      AIModelVersion? @relation("ModelVersionUsed", fields: [modelVersionId], references: [id])
+  reasoningSteps    AIReasoningStep[]
+  feedbackAnnotations AIFeedbackAnnotation[]
+  evaluationMetrics AIEvaluationMetric[]
+  contexts          AIReasoningContext[]
+  
+  // Add these fields to existing AIReasoning model
+}
+
+// AIPromptSafetyCheck model for tracking safety checks on prompts
+model AIPromptSafetyCheck {
+  id                String      @id @default(uuid())
+  createdAt         DateTime    @default(now())
+  promptId          String
+  checkType         String      // e.g., "toxicity", "bias", "harmful_instructions", "pii_detection"
+  score             Float       // Score from 0 to 1
+  passed            Boolean
+  details           Json?       // Detailed check results
+  prompt            AIPrompt    @relation(fields: [promptId], references: [id])
+
+  @@index([promptId])
+  @@index([checkType])
+  @@index([passed])
+}
+
+// Add relation to AIPrompt model
+model AIPrompt {
+  // Existing fields...
+  
+  safetyChecks      AIPromptSafetyCheck[]
+  
+  // Add this field to existing AIPrompt model
+}

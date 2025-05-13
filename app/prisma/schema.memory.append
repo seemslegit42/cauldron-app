@@ -1,0 +1,99 @@
+// Memory System Schema Extension
+
+// Enhanced Memory Entry model with vector support
+model EnhancedMemoryEntry {
+  id                String              @id @default(uuid())
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  userId            String
+  agentId           String?
+  sessionId         String?
+  type              MemoryEntryType
+  contentType       String
+  context           String
+  content           Json
+  embedding         Float[]             // Vector embedding for semantic search
+  importance        Float               @default(1.0)
+  expiresAt         DateTime?
+  metadata          Json?
+  temporalReferences TemporalReference[]
+  user              User                @relation(fields: [userId], references: [id])
+  agent             AI_Agent?           @relation(fields: [agentId], references: [id])
+  session           AgentSession?       @relation(fields: [sessionId], references: [sessionId])
+
+  @@index([userId])
+  @@index([agentId])
+  @@index([sessionId])
+  @@index([type])
+  @@index([contentType])
+  @@index([importance])
+  @@index([expiresAt])
+}
+
+// Temporal reference for time-based memory queries
+model TemporalReference {
+  id                String              @id @default(uuid())
+  createdAt         DateTime            @default(now())
+  memoryEntryId     String
+  type              TemporalReferenceType
+  value             String
+  startDate         DateTime?
+  endDate           DateTime?
+  recurrencePattern String?
+  milestone         String?
+  memoryEntry       EnhancedMemoryEntry @relation(fields: [memoryEntryId], references: [id], onDelete: Cascade)
+
+  @@index([memoryEntryId])
+  @@index([type])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+// Memory comparison for tracking changes over time
+model MemoryComparison {
+  id                String              @id @default(uuid())
+  createdAt         DateTime            @default(now())
+  userId            String
+  sourceMemoryId    String
+  targetMemoryId    String
+  comparisonType    String
+  differences       Json
+  summary           String?
+  user              User                @relation(fields: [userId], references: [id])
+  sourceMemory      EnhancedMemoryEntry @relation("SourceMemory", fields: [sourceMemoryId], references: [id])
+  targetMemory      EnhancedMemoryEntry @relation("TargetMemory", fields: [targetMemoryId], references: [id])
+
+  @@index([userId])
+  @@index([sourceMemoryId])
+  @@index([targetMemoryId])
+  @@index([comparisonType])
+}
+
+// Memory query cache for performance optimization
+model MemoryQueryCache {
+  id                String              @id @default(uuid())
+  createdAt         DateTime            @default(now())
+  userId            String
+  query             String
+  results           Json
+  expiresAt         DateTime
+  user              User                @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([query])
+  @@index([expiresAt])
+}
+
+// Enums for memory types
+enum MemoryEntryType {
+  SHORT_TERM
+  LONG_TERM
+}
+
+enum TemporalReferenceType {
+  ABSOLUTE
+  RELATIVE
+  RECURRING
+  SEASONAL
+  MILESTONE
+}

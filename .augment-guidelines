@@ -1,0 +1,214 @@
+For building on Wasp’s Open SaaS boilerplate
+
+1. 🏗️ Project Architecture
+1.1 Follow Wasp Convention
+Respect Wasp’s directory layout: main.wasp, src/, server/, client/, shared/.
+
+Use Wasp’s declarative syntax to define routes, pages, auth, and operations in main.wasp.
+
+1.2 Modular Separation by Feature
+Each module (Arcana, Phantom, Forgeflow, etc.) should have its own subfolder inside /src/modules/ with:
+
+pages/
+
+components/
+
+services/
+
+api/
+
+agentHooks.ts for agent-based workflows
+
+1.3 Agent-Centric Design
+Wrap business logic and flows with agent-aware layers (i.e., Sentient Loop™ should supervise all critical workflows).
+
+Maintain separation of human-initiated vs. autonomous agent-triggered tasks.
+
+2. ⚙️ Backend & Data Model
+2.1 Use Prisma for Data Modeling
+Define all entities in schema.prisma. Use clear naming conventions: User, AgentSession, ModuleState, ThreatLog, etc.
+
+Enable relation mapping between users, agents, permissions, and actions.
+
+2.2 Handle Migrations Cautiously
+Always validate schema before migration.
+
+Run: npx prisma migrate dev --name "create_core_models"
+
+2.3 Use Strong Typing
+Type all API responses and backend logic using TypeScript with Prisma client autocompletion.
+
+3. 👤 Auth & Roles
+3.1 Implement Secure Auth with Wasp
+Use Wasp's built-in auth with password + email or third-party auth (Google, GitHub).
+
+Store auth tokens securely using cookies with HttpOnly and Secure flags.
+
+3.2 Define Role-Based Access
+Roles: Admin, Agent, Executive, Operator
+
+Guard pages using Wasp's authenticated and role: directives in main.wasp.
+
+4. 🧬 AI Orchestration Layer
+4.1 SuperAGI Integration
+Use SuperAGI's orchestration capabilities to spawn sub-agents per task.
+
+Log agent behaviors in AgentSessionLog with timestamped input/output chains.
+
+4.2 Implement Sentient Loop™ Hooks
+Insert sentientCheckpoints() into all decision-heavy flows.
+
+Require humanConfirmation() before executing irreversible actions.
+
+Store state in a central AgentMemory table for reference and oversight.
+
+5. 🧠 AI/LLM & Groq Integration
+5.1 Use Groq for AI Computation
+Route high-performance LLM prompts through Groq’s endpoints.
+
+Use structured prompt templates stored in /shared/prompts/.
+
+5.2 Integrate Vercel AI SDK
+For UI-side AI interactions, stream responses via Vercel’s useChat() or useCompletion() hooks.
+
+Avoid re-rendering entire components—use streaming for minimal DOM updates.
+
+6. 💻 Frontend Development
+6.1 UI Principles
+Follow the Corporate Cyberpunk design system (dark backgrounds, neon highlights).
+
+Use TailwindCSS via Wasp boilerplate.
+
+Build responsive, mobile-first layouts.
+
+6.2 Navigation Design
+Implement sidebar with icons and tooltips.
+
+Use react-router-dom routes with Wasp’s declarative page definitions.
+
+6.3 Error Handling UX
+Every module must have:
+
+Loading state
+
+Empty state
+
+Error boundary
+
+Agent fallback messages
+
+7. 🔐 Security Practices
+7.1 Secure Inputs
+Sanitize all user inputs before processing or AI passing.
+
+Prevent prompt injection in all AI-exposed interfaces.
+
+7.2 Enforce Session Auditing
+Log all critical user actions, agent decisions, and mutations.
+
+Store logs encrypted and viewable in the Sentinel module.
+
+7.3 Credential Management
+Use environment variables for API keys. Never hardcode.
+
+Implement HashiCorp Vault or similar for credential rotation and retrieval by agents.
+
+8. 🧪 Testing & Validation
+8.1 Use Wasp’s Built-in Testing Tools
+Write integration tests for each operation.
+
+Simulate both user and agent workflows.
+
+8.2 Linting & Formatting
+Use ESLint with TypeScript rules.
+
+Format using Prettier.
+
+Validate against OpenSaaS guidelines.
+
+9. 🚀 Deployment Readiness
+9.1 Configure .env Securely
+Keep all secrets, keys, database URLs in .env.
+
+Use Vercel’s encrypted environment variable store during deploy.
+
+9.2 CI/CD Pipeline
+Use GitHub Actions to lint, test, and deploy to Vercel.
+
+Require approvals for production pushes.
+
+10. 📦 Agent-Specific Build Practices
+10.1 Auto-Register Agents
+Agents must register themselves with metadata: purpose, owner, module, scope.
+
+Store in AgentRegistry table.
+
+10.2 Memory & State
+Use AgentMemory to track context windows, past decisions, and goals.
+
+Implement replayability: user can inspect agent’s full session replay.
+
+10.3 Agent Escalation Policies
+Define when agents must escalate:
+
+Ambiguous input
+
+High-confidence decision
+
+Security triggers
+
+Escalation handled via SentientLoop.confirm() method.
+
+11. 📄 Documentation Standards
+11.1 Comment Structure
+Every file must begin with a docstring explaining its purpose.
+
+Complex logic must include inline comments.
+
+11.2 Prompt Library
+Store AI prompt templates in /shared/prompts.
+
+Label each with: use_case, tokens_estimate, safety_level.
+
+ Use Glassmorphism for:
+These are components that benefit from visual emphasis or need to stand out without being too loud.
+
+✅ 1. Cards
+User profiles, stats, product previews
+
+Often shown over backgrounds (e.g., dashboards, galleries)
+
+✅ 2. Modals / Popups
+When shown over a background blur, glass looks intentional
+
+Adds depth and focus without harsh contrast
+
+✅ 3. Navigation Overlays
+Sidebars, dropdowns, mobile nav panels
+
+Makes layered menus look fluid and integrated
+
+✅ 4. Dashboards
+Panels, widgets, summary boxes
+
+A frosted look over a gradient or abstract background feels futuristic and clean
+
+✅ 5. Hero Sections / Callouts
+Especially when content floats over an image or video
+
+Glass adds contrast and elegance
+
+🚫 Avoid Glassmorphism on:
+Use flat or neutral design instead for these:
+
+❌ 1. Dense content areas
+Tables, forms, or code blocks: glass makes these harder to read
+
+❌ 2. Main content backgrounds
+Glass works best on top of backgrounds, not as the main background
+
+❌ 3. Too many elements at once
+Overuse leads to a blurry, unfocused feel—use 1–2 glass elements per view max
+
+
+
