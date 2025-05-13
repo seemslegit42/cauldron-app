@@ -2,6 +2,9 @@
  * Export all components from the Forgeflow module
  */
 
+// Layout components
+export { default as ForgeflowLayout } from './layout/ForgeflowLayout';
+
 // Main components
 export { default as WorkflowCanvas } from './WorkflowCanvas';
 export { NodePalette } from './NodePalette';

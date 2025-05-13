@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  ModuleSettingsPage, 
-  ModuleAgent 
+import {
+  ModuleSettingsPage,
+  ModuleAgent
 } from '@src/shared/components/settings/ModuleSettingsPage';
 import { TabsContent, TabsTrigger } from '@src/shared/components/ui/Tabs';
 import { Card } from '@src/shared/components/ui/Card';
@@ -9,12 +9,15 @@ import { Button } from '@src/shared/components/ui/Button';
 import { Toggle } from '@src/shared/components/ui/Toggle';
 import { Slider } from '@src/shared/components/ui/Slider';
 import { Select } from '@src/shared/components/ui/Select';
+import { GlassmorphicCard } from '@src/shared/components/branding/GlassmorphicCard';
 
 /**
  * Phantom Module Settings Page
- * 
- * This page allows users to configure settings for the Phantom module,
- * including agent configuration, security scan settings, and alert thresholds.
+ *
+ * Where digital paranoia meets user-friendly configuration.
+ * This page allows users to configure settings for the Phantom security module,
+ * including agent behavior, security scans, and alert thresholds.
+ * Remember: Just because you're paranoid doesn't mean they aren't after your data.
  */
 export const SettingsPage: React.FC = () => {
   // Define the agents for the Phantom module
@@ -44,7 +47,7 @@ export const SettingsPage: React.FC = () => {
       resourcePath: 'agents/vulnerability-analyzer',
     },
   ];
-  
+
   // Security scan settings
   const [scanSettings, setScanSettings] = useState({
     scanFrequency: 'daily',
@@ -54,7 +57,7 @@ export const SettingsPage: React.FC = () => {
     includeExternalAssets: true,
     retainScanHistory: 90, // days
   });
-  
+
   // Alert threshold settings
   const [alertThresholds, setAlertThresholds] = useState({
     criticalThreshold: 80,
@@ -67,7 +70,7 @@ export const SettingsPage: React.FC = () => {
     slackAlerts: false,
     slackWebhook: '',
   });
-  
+
   // Handle scan setting changes
   const handleScanSettingChange = (key: string, value: any) => {
     setScanSettings(prev => ({
@@ -75,7 +78,7 @@ export const SettingsPage: React.FC = () => {
       [key]: value,
     }));
   };
-  
+
   // Handle alert threshold changes
   const handleAlertThresholdChange = (key: string, value: any) => {
     setAlertThresholds(prev => ({
@@ -83,29 +86,29 @@ export const SettingsPage: React.FC = () => {
       [key]: value,
     }));
   };
-  
+
   // Save scan settings
   const saveScanSettings = () => {
     // This would typically save to the backend
     alert('Scan settings saved!');
   };
-  
+
   // Save alert thresholds
   const saveAlertThresholds = () => {
     // This would typically save to the backend
     alert('Alert thresholds saved!');
   };
-  
+
   // Additional tabs for the settings page
   const additionalTabs = (
     <>
       <TabsTrigger value="scans">Security Scans</TabsTrigger>
       <TabsTrigger value="alerts">Alert Thresholds</TabsTrigger>
-      
+
       <TabsContent value="scans" className="space-y-6">
-        <Card className="p-6">
-          <h2 className="text-xl font-bold mb-6">Security Scan Settings</h2>
-          
+        <GlassmorphicCard moduleId="phantom" level="medium" border shadow className="p-6">
+          <h2 className="text-xl font-bold mb-6 text-phantom-red-400">Security Scan Settings</h2>
+
           <div className="space-y-4">
             {/* Scan frequency */}
             <div className="space-y-2">
@@ -120,7 +123,7 @@ export const SettingsPage: React.FC = () => {
                 <option value="monthly">Monthly</option>
               </Select>
             </div>
-            
+
             {/* Scan depth */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Scan Depth</label>
@@ -134,7 +137,7 @@ export const SettingsPage: React.FC = () => {
                 <option value="forensic">Forensic (Maximum depth)</option>
               </Select>
             </div>
-            
+
             {/* Automatic scans */}
             <div className="flex items-center justify-between">
               <div>
@@ -146,7 +149,7 @@ export const SettingsPage: React.FC = () => {
                 onChange={(value) => handleScanSettingChange('enableAutomaticScans', value)}
               />
             </div>
-            
+
             {/* Scan time window */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Scan Time Window</label>
@@ -162,7 +165,7 @@ export const SettingsPage: React.FC = () => {
                 <option value="anytime">Anytime</option>
               </Select>
             </div>
-            
+
             {/* Include external assets */}
             <div className="flex items-center justify-between">
               <div>
@@ -174,7 +177,7 @@ export const SettingsPage: React.FC = () => {
                 onChange={(value) => handleScanSettingChange('includeExternalAssets', value)}
               />
             </div>
-            
+
             {/* Retain scan history */}
             <div className="space-y-2">
               <div className="flex justify-between">
@@ -188,20 +191,20 @@ export const SettingsPage: React.FC = () => {
                 onValueChange={(value) => handleScanSettingChange('retainScanHistory', value[0])}
               />
             </div>
-            
+
             <div className="pt-4">
               <Button onClick={saveScanSettings}>
                 Save Scan Settings
               </Button>
             </div>
           </div>
-        </Card>
+        </GlassmorphicCard>
       </TabsContent>
-      
+
       <TabsContent value="alerts" className="space-y-6">
-        <Card className="p-6">
-          <h2 className="text-xl font-bold mb-6">Alert Threshold Settings</h2>
-          
+        <GlassmorphicCard moduleId="phantom" level="medium" border shadow className="p-6">
+          <h2 className="text-xl font-bold mb-6 text-phantom-red-400">Alert Threshold Settings</h2>
+
           <div className="space-y-4">
             {/* Critical threshold */}
             <div className="space-y-2">
@@ -216,7 +219,7 @@ export const SettingsPage: React.FC = () => {
                 onValueChange={(value) => handleAlertThresholdChange('criticalThreshold', value[0])}
               />
             </div>
-            
+
             {/* High threshold */}
             <div className="space-y-2">
               <div className="flex justify-between">
@@ -230,7 +233,7 @@ export const SettingsPage: React.FC = () => {
                 onValueChange={(value) => handleAlertThresholdChange('highThreshold', value[0])}
               />
             </div>
-            
+
             {/* Medium threshold */}
             <div className="space-y-2">
               <div className="flex justify-between">
@@ -244,7 +247,7 @@ export const SettingsPage: React.FC = () => {
                 onValueChange={(value) => handleAlertThresholdChange('mediumThreshold', value[0])}
               />
             </div>
-            
+
             {/* Low threshold */}
             <div className="space-y-2">
               <div className="flex justify-between">
@@ -258,7 +261,7 @@ export const SettingsPage: React.FC = () => {
                 onValueChange={(value) => handleAlertThresholdChange('lowThreshold', value[0])}
               />
             </div>
-            
+
             {/* Auto-resolve threshold */}
             <div className="space-y-2">
               <div className="flex justify-between">
@@ -272,10 +275,10 @@ export const SettingsPage: React.FC = () => {
                 onValueChange={(value) => handleAlertThresholdChange('autoResolveThreshold', value[0])}
               />
             </div>
-            
+
             <div className="border-t border-gray-200 my-4 pt-4">
               <h3 className="text-sm font-medium mb-2">Alert Notifications</h3>
-              
+
               {/* Alert notifications */}
               <div className="flex items-center justify-between mt-2">
                 <div>
@@ -287,7 +290,7 @@ export const SettingsPage: React.FC = () => {
                   onChange={(value) => handleAlertThresholdChange('alertNotifications', value)}
                 />
               </div>
-              
+
               {/* Email alerts */}
               <div className="flex items-center justify-between mt-2">
                 <div>
@@ -300,7 +303,7 @@ export const SettingsPage: React.FC = () => {
                   disabled={!alertThresholds.alertNotifications}
                 />
               </div>
-              
+
               {/* Slack alerts */}
               <div className="flex items-center justify-between mt-2">
                 <div>
@@ -313,7 +316,7 @@ export const SettingsPage: React.FC = () => {
                   disabled={!alertThresholds.alertNotifications}
                 />
               </div>
-              
+
               {/* Slack webhook */}
               {alertThresholds.slackAlerts && (
                 <div className="mt-2">
@@ -329,23 +332,23 @@ export const SettingsPage: React.FC = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="pt-4">
               <Button onClick={saveAlertThresholds}>
                 Save Alert Thresholds
               </Button>
             </div>
           </div>
-        </Card>
+        </GlassmorphicCard>
       </TabsContent>
     </>
   );
-  
+
   return (
     <ModuleSettingsPage
       moduleId="phantom"
       moduleName="Phantom"
-      moduleDescription="Configure settings for the Phantom security module, including agent behavior, security scans, and alert thresholds."
+      moduleDescription="Configure your digital bodyguards and threat detection systems. Paranoia as a service."
       agents={phantomAgents}
       additionalTabs={additionalTabs}
     />

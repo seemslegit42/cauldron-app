@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { routes } from 'wasp/client/router';
 
 interface Module {
@@ -103,10 +103,40 @@ export default function Modules() {
                 </dt>
                 <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600 dark:text-gray-300">
                   <p className="flex-auto">{module.description}</p>
-                  <p className="mt-6">
+                  <p className="mt-6 flex space-x-4">
                     <a href={module.href} className="text-sm font-semibold leading-6 text-arcana-purple-600 dark:text-arcana-purple-400">
-                      Learn more <span aria-hidden="true">→</span>
+                      Standard <span aria-hidden="true">→</span>
                     </a>
+                    {module.name === 'Arcana' && (
+                      <a href={routes.EnhancedArcanaRoute.to} className="text-sm font-semibold leading-6 text-arcana-purple-600 dark:text-arcana-purple-400">
+                        Enhanced <span aria-hidden="true">→</span>
+                      </a>
+                    )}
+                    {module.name === 'Phantom' && (
+                      <a href={routes.EnhancedPhantomRoute.to} className="text-sm font-semibold leading-6 text-arcana-purple-600 dark:text-arcana-purple-400">
+                        Enhanced <span aria-hidden="true">→</span>
+                      </a>
+                    )}
+                    {module.name === 'Athena' && (
+                      <a href={routes.EnhancedAthenaRoute.to} className="text-sm font-semibold leading-6 text-arcana-purple-600 dark:text-arcana-purple-400">
+                        Enhanced <span aria-hidden="true">→</span>
+                      </a>
+                    )}
+                    {module.name === 'Forgeflow' && (
+                      <a href={routes.EnhancedForgeflowRoute.to} className="text-sm font-semibold leading-6 text-arcana-purple-600 dark:text-arcana-purple-400">
+                        Enhanced <span aria-hidden="true">→</span>
+                      </a>
+                    )}
+                    {module.name === 'Sentinel' && (
+                      <a href={routes.EnhancedSentinelRoute.to} className="text-sm font-semibold leading-6 text-arcana-purple-600 dark:text-arcana-purple-400">
+                        Enhanced <span aria-hidden="true">→</span>
+                      </a>
+                    )}
+                    {module.name === 'Manifold' && (
+                      <a href={routes.EnhancedManifoldRoute.to} className="text-sm font-semibold leading-6 text-arcana-purple-600 dark:text-arcana-purple-400">
+                        Enhanced <span aria-hidden="true">→</span>
+                      </a>
+                    )}
                   </p>
                 </dd>
               </div>

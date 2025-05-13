@@ -1,7 +1,7 @@
 import React from 'react';
-import { 
-  ModuleSettingsPage, 
-  ModuleAgent 
+import {
+  ModuleSettingsPage,
+  ModuleAgent
 } from '@src/shared/components/settings/ModuleSettingsPage';
 import { TabsContent, TabsTrigger } from '@src/shared/components/ui/Tabs';
 import { Card } from '@src/shared/components/ui/Card';
@@ -9,12 +9,15 @@ import { Button } from '@src/shared/components/ui/Button';
 import { Toggle } from '@src/shared/components/ui/Toggle';
 import { Select } from '@src/shared/components/ui/Select';
 import { Slider } from '@src/shared/components/ui/Slider';
+import { GlassmorphicCard } from '@src/shared/components/branding/GlassmorphicCard';
 
 /**
  * Forgeflow Module Settings Page
- * 
+ *
+ * Where AI agents are born, trained, and occasionally sent to digital therapy.
  * This page allows users to configure settings for the Forgeflow module,
  * including agent configuration, workflow settings, and execution preferences.
+ * Remember: With great workflow power comes great responsibility.
  */
 export default function SettingsPage() {
   // Define the agents for the Forgeflow module
@@ -44,7 +47,7 @@ export default function SettingsPage() {
       resourcePath: 'agents/workflow-optimizer',
     },
   ];
-  
+
   // Workflow settings
   const [workflowSettings, setWorkflowSettings] = React.useState({
     maxConcurrentWorkflows: 5,
@@ -57,7 +60,7 @@ export default function SettingsPage() {
     maxRetryAttempts: 3,
     retryDelaySeconds: 5,
   });
-  
+
   // Execution preferences
   const [executionPreferences, setExecutionPreferences] = React.useState({
     defaultExecutionMode: 'automatic',
@@ -71,7 +74,7 @@ export default function SettingsPage() {
     resourceLimitCPU: 80, // percentage
     resourceLimitMemory: 70, // percentage
   });
-  
+
   // Handle workflow setting changes
   const handleWorkflowSettingChange = (key: string, value: any) => {
     setWorkflowSettings(prev => ({
@@ -79,7 +82,7 @@ export default function SettingsPage() {
       [key]: value,
     }));
   };
-  
+
   // Handle execution preference changes
   const handleExecutionPreferenceChange = (key: string, value: any) => {
     setExecutionPreferences(prev => ({
@@ -87,29 +90,29 @@ export default function SettingsPage() {
       [key]: value,
     }));
   };
-  
+
   // Save workflow settings
   const saveWorkflowSettings = () => {
     // This would typically save to the backend
     alert('Workflow settings saved!');
   };
-  
+
   // Save execution preferences
   const saveExecutionPreferences = () => {
     // This would typically save to the backend
     alert('Execution preferences saved!');
   };
-  
+
   // Additional tabs for the settings page
   const additionalTabs = (
     <>
       <TabsTrigger value="workflow">Workflow Settings</TabsTrigger>
       <TabsTrigger value="execution">Execution Preferences</TabsTrigger>
-      
+
       <TabsContent value="workflow" className="space-y-6">
-        <Card className="p-6">
-          <h2 className="text-xl font-bold mb-6">Workflow Settings</h2>
-          
+        <GlassmorphicCard moduleId="forgeflow" level="medium" border shadow className="p-6">
+          <h2 className="text-xl font-bold mb-6 text-forgeflow-green-400">Workflow Settings</h2>
+
           <div className="space-y-4">
             {/* Max Concurrent Workflows */}
             <div className="space-y-2">
@@ -124,7 +127,7 @@ export default function SettingsPage() {
                 onValueChange={(value) => handleWorkflowSettingChange('maxConcurrentWorkflows', value[0])}
               />
             </div>
-            
+
             {/* Max Steps Per Workflow */}
             <div className="space-y-2">
               <div className="flex justify-between">
@@ -138,7 +141,7 @@ export default function SettingsPage() {
                 onValueChange={(value) => handleWorkflowSettingChange('maxStepsPerWorkflow', value[0])}
               />
             </div>
-            
+
             {/* Default Execution Timeout */}
             <div className="space-y-2">
               <div className="flex justify-between">
@@ -152,7 +155,7 @@ export default function SettingsPage() {
                 onValueChange={(value) => handleWorkflowSettingChange('defaultExecutionTimeout', value[0])}
               />
             </div>
-            
+
             {/* Enable Parallel Execution */}
             <div className="flex items-center justify-between">
               <div>
@@ -164,7 +167,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleWorkflowSettingChange('enableParallelExecution', value)}
               />
             </div>
-            
+
             {/* Enable Workflow History */}
             <div className="flex items-center justify-between">
               <div>
@@ -176,7 +179,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleWorkflowSettingChange('enableWorkflowHistory', value)}
               />
             </div>
-            
+
             {/* Workflow History Retention */}
             {workflowSettings.enableWorkflowHistory && (
               <div className="space-y-2">
@@ -192,7 +195,7 @@ export default function SettingsPage() {
                 />
               </div>
             )}
-            
+
             {/* Enable Auto Retry */}
             <div className="flex items-center justify-between">
               <div>
@@ -204,7 +207,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleWorkflowSettingChange('enableAutoRetry', value)}
               />
             </div>
-            
+
             {/* Max Retry Attempts */}
             {workflowSettings.enableAutoRetry && (
               <div className="space-y-2">
@@ -220,7 +223,7 @@ export default function SettingsPage() {
                 />
               </div>
             )}
-            
+
             {/* Retry Delay */}
             {workflowSettings.enableAutoRetry && (
               <div className="space-y-2">
@@ -236,20 +239,20 @@ export default function SettingsPage() {
                 />
               </div>
             )}
-            
+
             <div className="pt-4">
               <Button onClick={saveWorkflowSettings}>
                 Save Workflow Settings
               </Button>
             </div>
           </div>
-        </Card>
+        </GlassmorphicCard>
       </TabsContent>
-      
+
       <TabsContent value="execution" className="space-y-6">
-        <Card className="p-6">
-          <h2 className="text-xl font-bold mb-6">Execution Preferences</h2>
-          
+        <GlassmorphicCard moduleId="forgeflow" level="medium" border shadow className="p-6">
+          <h2 className="text-xl font-bold mb-6 text-forgeflow-green-400">Execution Preferences</h2>
+
           <div className="space-y-4">
             {/* Default Execution Mode */}
             <div className="space-y-2">
@@ -263,7 +266,7 @@ export default function SettingsPage() {
                 <option value="manual">Manual (Step-by-Step)</option>
               </Select>
             </div>
-            
+
             {/* Require Approval For Actions */}
             <div className="flex items-center justify-between">
               <div>
@@ -275,7 +278,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleExecutionPreferenceChange('requireApprovalForActions', value)}
               />
             </div>
-            
+
             {/* Log Execution Details */}
             <div className="flex items-center justify-between">
               <div>
@@ -287,7 +290,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleExecutionPreferenceChange('logExecutionDetails', value)}
               />
             </div>
-            
+
             {/* Notify On Completion */}
             <div className="flex items-center justify-between">
               <div>
@@ -299,7 +302,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleExecutionPreferenceChange('notifyOnCompletion', value)}
               />
             </div>
-            
+
             {/* Notify On Error */}
             <div className="flex items-center justify-between">
               <div>
@@ -311,7 +314,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleExecutionPreferenceChange('notifyOnError', value)}
               />
             </div>
-            
+
             {/* Notification Email */}
             {(executionPreferences.notifyOnCompletion || executionPreferences.notifyOnError) && (
               <div className="space-y-2">
@@ -325,7 +328,7 @@ export default function SettingsPage() {
                 />
               </div>
             )}
-            
+
             {/* Enable Execution Metrics */}
             <div className="flex items-center justify-between">
               <div>
@@ -337,7 +340,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleExecutionPreferenceChange('enableExecutionMetrics', value)}
               />
             </div>
-            
+
             {/* Enable Resource Monitoring */}
             <div className="flex items-center justify-between">
               <div>
@@ -349,7 +352,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleExecutionPreferenceChange('enableResourceMonitoring', value)}
               />
             </div>
-            
+
             {/* Resource Limits */}
             {executionPreferences.enableResourceMonitoring && (
               <>
@@ -365,7 +368,7 @@ export default function SettingsPage() {
                     onValueChange={(value) => handleExecutionPreferenceChange('resourceLimitCPU', value[0])}
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <label className="text-sm font-medium">Memory Limit: {executionPreferences.resourceLimitMemory}%</label>
@@ -380,23 +383,23 @@ export default function SettingsPage() {
                 </div>
               </>
             )}
-            
+
             <div className="pt-4">
               <Button onClick={saveExecutionPreferences}>
                 Save Execution Preferences
               </Button>
             </div>
           </div>
-        </Card>
+        </GlassmorphicCard>
       </TabsContent>
     </>
   );
-  
+
   return (
     <ModuleSettingsPage
       moduleId="forgeflow"
       moduleName="Forgeflow"
-      moduleDescription="Configure settings for the Forgeflow agent builder module, including agent behavior, workflow settings, and execution preferences."
+      moduleDescription="Configure your AI workflow factory. Build, optimize, and deploy digital assembly lines with a touch of magic."
       agents={forgeflowAgents}
       additionalTabs={additionalTabs}
     />

@@ -5,16 +5,24 @@ import { PersonaLibrary } from '@src/shared/components/ai/PersonaLibrary';
 import { PersonaDetail } from '@src/shared/components/ai/PersonaDetail';
 import { PersonaEditor } from '@src/shared/components/ai/PersonaEditor';
 import { Button } from '@src/shared/components/ui/Button';
-import { PageHeader } from '@src/shared/components/layout/PageHeader';
 import { PermissionGuard } from '@src/shared/components/auth/PermissionGuard';
 import { ModuleSettingsButton } from '@src/shared/components/settings/ModuleSettingsButton';
-import { Plus, Library, Settings } from 'lucide-react';
+import { ArcanaLayout } from '../components/layout/ArcanaLayout';
+import { GlassmorphicCard } from '@src/shared/components/branding/GlassmorphicCard';
+import { Plus, Library, Settings, Users } from 'lucide-react';
+
+/**
+ * Agent Personas Page
+ *
+ * Where AI personalities are born, nurtured, and occasionally given existential crises.
+ * This page allows users to create and manage different personas for their AI agents.
+ */
 
 const PersonasPage: React.FC = () => {
   const { data: user } = useUser();
   const [view, setView] = useState<'library' | 'detail' | 'create' | 'edit'>('library');
   const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
-  
+
   const {
     selectedPersona,
     createPersona,
@@ -126,37 +134,36 @@ const PersonasPage: React.FC = () => {
       requiredPermission="personas:read"
       fallback={<div>You don't have permission to access this page.</div>}
     >
-      <div className="container mx-auto px-4 py-6">
-        <PageHeader
-          title="Agent Personas"
-          description="Create, customize, and manage agent personas for your AI assistants."
-          icon={<Library className="h-6 w-6" />}
-          actions={
-            <div className="flex space-x-2">
-              {view === 'library' && (
-                <Button onClick={handleCreatePersona}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  Create Persona
-                </Button>
-              )}
-              <ModuleSettingsButton moduleId="arcana" section="personas">
-                <Settings className="h-4 w-4 mr-1" />
-                Settings
-              </ModuleSettingsButton>
-            </div>
-          }
-        />
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
-            {error}
+      <ArcanaLayout
+        title="Agent Personas"
+        description="Create, customize, and manage agent personalities"
+        actions={
+          <div className="flex space-x-2">
+            {view === 'library' && (
+              <Button onClick={handleCreatePersona}>
+                <Plus className="h-4 w-4 mr-1" />
+                Create Persona
+              </Button>
+            )}
+            <ModuleSettingsButton moduleId="arcana" section="personas">
+              <Settings className="h-4 w-4 mr-1" />
+              Settings
+            </ModuleSettingsButton>
           </div>
+        }
+      >
+        {error && (
+          <GlassmorphicCard moduleId="arcana" level="light" border shadow className="p-4 mb-6 bg-red-900/20">
+            <div className="text-red-400">
+              {error}
+            </div>
+          </GlassmorphicCard>
         )}
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+        <GlassmorphicCard moduleId="arcana" level="medium" border shadow className="p-6">
           {renderContent()}
-        </div>
-      </div>
+        </GlassmorphicCard>
+      </ArcanaLayout>
     </PermissionGuard>
   );
 };

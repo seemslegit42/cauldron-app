@@ -1,7 +1,7 @@
 import React from 'react';
-import { 
-  ModuleSettingsPage, 
-  ModuleAgent 
+import {
+  ModuleSettingsPage,
+  ModuleAgent
 } from '@src/shared/components/settings/ModuleSettingsPage';
 import { TabsContent, TabsTrigger } from '@src/shared/components/ui/Tabs';
 import { Card } from '@src/shared/components/ui/Card';
@@ -9,12 +9,15 @@ import { Button } from '@src/shared/components/ui/Button';
 import { Toggle } from '@src/shared/components/ui/Toggle';
 import { Select } from '@src/shared/components/ui/Select';
 import { Slider } from '@src/shared/components/ui/Slider';
+import { GlassmorphicCard } from '@src/shared/components/branding/GlassmorphicCard';
 
 /**
  * Sentinel Module Settings Page
- * 
- * This page allows users to configure settings for the Sentinel module,
+ *
+ * Where paranoia meets productivity in the digital realm.
+ * This page allows users to configure settings for the Sentinel security module,
  * including agent configuration, security scan settings, and alert thresholds.
+ * Remember: It's not paranoia if they're really out to get your data.
  */
 export default function SettingsPage() {
   // Define the agents for the Sentinel module
@@ -44,7 +47,7 @@ export default function SettingsPage() {
       resourcePath: 'agents/incident-responder',
     },
   ];
-  
+
   // Security scan settings
   const [securitySettings, setSecuritySettings] = React.useState({
     scanFrequency: 'daily',
@@ -58,7 +61,7 @@ export default function SettingsPage() {
     enableAnomalyDetection: true,
     anomalyDetectionSensitivity: 'medium',
   });
-  
+
   // Alert settings
   const [alertSettings, setAlertSettings] = React.useState({
     enableAlerts: true,
@@ -73,7 +76,7 @@ export default function SettingsPage() {
     alertGrouping: true,
     autoResolveAlerts: false,
   });
-  
+
   // Handle security setting changes
   const handleSecuritySettingChange = (key: string, value: any) => {
     setSecuritySettings(prev => ({
@@ -81,7 +84,7 @@ export default function SettingsPage() {
       [key]: value,
     }));
   };
-  
+
   // Handle alert setting changes
   const handleAlertSettingChange = (key: string, value: any) => {
     setAlertSettings(prev => ({
@@ -89,7 +92,7 @@ export default function SettingsPage() {
       [key]: value,
     }));
   };
-  
+
   // Toggle monitored resource
   const toggleMonitoredResource = (resource: string) => {
     setSecuritySettings(prev => {
@@ -107,7 +110,7 @@ export default function SettingsPage() {
       }
     });
   };
-  
+
   // Toggle credential scan location
   const toggleCredentialScanLocation = (location: string) => {
     setSecuritySettings(prev => {
@@ -125,7 +128,7 @@ export default function SettingsPage() {
       }
     });
   };
-  
+
   // Toggle alert channel
   const toggleAlertChannel = (severity: 'critical' | 'high' | 'medium' | 'low', channel: string) => {
     setAlertSettings(prev => {
@@ -144,29 +147,29 @@ export default function SettingsPage() {
       }
     });
   };
-  
+
   // Save security settings
   const saveSecuritySettings = () => {
     // This would typically save to the backend
     alert('Security settings saved!');
   };
-  
+
   // Save alert settings
   const saveAlertSettings = () => {
     // This would typically save to the backend
     alert('Alert settings saved!');
   };
-  
+
   // Additional tabs for the settings page
   const additionalTabs = (
     <>
       <TabsTrigger value="security">Security Scans</TabsTrigger>
       <TabsTrigger value="alerts">Alert Settings</TabsTrigger>
-      
+
       <TabsContent value="security" className="space-y-6">
-        <Card className="p-6">
-          <h2 className="text-xl font-bold mb-6">Security Scan Settings</h2>
-          
+        <GlassmorphicCard moduleId="sentinel" level="medium" border shadow className="p-6">
+          <h2 className="text-xl font-bold mb-6 text-sentinel-blue-400">Security Scan Settings</h2>
+
           <div className="space-y-4">
             {/* Scan Frequency */}
             <div className="space-y-2">
@@ -181,7 +184,7 @@ export default function SettingsPage() {
                 <option value="monthly">Monthly</option>
               </Select>
             </div>
-            
+
             {/* Scan Time */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Scan Time</label>
@@ -192,7 +195,7 @@ export default function SettingsPage() {
                 className="w-full p-2 border border-gray-300 rounded-md"
               />
             </div>
-            
+
             {/* Real-Time Monitoring */}
             <div className="flex items-center justify-between">
               <div>
@@ -204,7 +207,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleSecuritySettingChange('enableRealTimeMonitoring', value)}
               />
             </div>
-            
+
             {/* Monitored Resources */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Monitored Resources</label>
@@ -251,7 +254,7 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-            
+
             {/* Vulnerability Scanning */}
             <div className="flex items-center justify-between">
               <div>
@@ -263,7 +266,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleSecuritySettingChange('enableVulnerabilityScanning', value)}
               />
             </div>
-            
+
             {/* Vulnerability Scan Depth */}
             {securitySettings.enableVulnerabilityScanning && (
               <div className="space-y-2">
@@ -278,7 +281,7 @@ export default function SettingsPage() {
                 </Select>
               </div>
             )}
-            
+
             {/* Credential Scanning */}
             <div className="flex items-center justify-between">
               <div>
@@ -290,7 +293,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleSecuritySettingChange('enableCredentialScanning', value)}
               />
             </div>
-            
+
             {/* Credential Scan Locations */}
             {securitySettings.enableCredentialScanning && (
               <div className="space-y-2">
@@ -329,7 +332,7 @@ export default function SettingsPage() {
                 </div>
               </div>
             )}
-            
+
             {/* Anomaly Detection */}
             <div className="flex items-center justify-between">
               <div>
@@ -341,7 +344,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleSecuritySettingChange('enableAnomalyDetection', value)}
               />
             </div>
-            
+
             {/* Anomaly Detection Sensitivity */}
             {securitySettings.enableAnomalyDetection && (
               <div className="space-y-2">
@@ -356,20 +359,20 @@ export default function SettingsPage() {
                 </Select>
               </div>
             )}
-            
+
             <div className="pt-4">
               <Button onClick={saveSecuritySettings}>
                 Save Security Settings
               </Button>
             </div>
           </div>
-        </Card>
+        </GlassmorphicCard>
       </TabsContent>
-      
+
       <TabsContent value="alerts" className="space-y-6">
-        <Card className="p-6">
-          <h2 className="text-xl font-bold mb-6">Alert Settings</h2>
-          
+        <GlassmorphicCard moduleId="sentinel" level="medium" border shadow className="p-6">
+          <h2 className="text-xl font-bold mb-6 text-sentinel-blue-400">Alert Settings</h2>
+
           <div className="space-y-4">
             {/* Enable Alerts */}
             <div className="flex items-center justify-between">
@@ -382,7 +385,7 @@ export default function SettingsPage() {
                 onChange={(value) => handleAlertSettingChange('enableAlerts', value)}
               />
             </div>
-            
+
             {/* Alert Channels */}
             {alertSettings.enableAlerts && (
               <>
@@ -421,7 +424,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">High Alert Channels</label>
                   <div className="grid grid-cols-3 gap-2">
@@ -457,41 +460,41 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Alert Email */}
-                {(alertSettings.criticalAlertChannels.includes('email') || 
+                {(alertSettings.criticalAlertChannels.includes('email') ||
                   alertSettings.highAlertChannels.includes('email') ||
                   alertSettings.mediumAlertChannels.includes('email') ||
                   alertSettings.lowAlertChannels.includes('email')) && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Alert Email</label>
-                    <input
-                      type="email"
-                      value={alertSettings.alertEmail}
-                      onChange={(e) => handleAlertSettingChange('alertEmail', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                      placeholder="email@example.com"
-                    />
-                  </div>
-                )}
-                
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Alert Email</label>
+                      <input
+                        type="email"
+                        value={alertSettings.alertEmail}
+                        onChange={(e) => handleAlertSettingChange('alertEmail', e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        placeholder="email@example.com"
+                      />
+                    </div>
+                  )}
+
                 {/* Slack Webhook */}
-                {(alertSettings.criticalAlertChannels.includes('slack') || 
+                {(alertSettings.criticalAlertChannels.includes('slack') ||
                   alertSettings.highAlertChannels.includes('slack') ||
                   alertSettings.mediumAlertChannels.includes('slack') ||
                   alertSettings.lowAlertChannels.includes('slack')) && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Slack Webhook URL</label>
-                    <input
-                      type="text"
-                      value={alertSettings.slackWebhook}
-                      onChange={(e) => handleAlertSettingChange('slackWebhook', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                      placeholder="https://hooks.slack.com/services/..."
-                    />
-                  </div>
-                )}
-                
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Slack Webhook URL</label>
+                      <input
+                        type="text"
+                        value={alertSettings.slackWebhook}
+                        onChange={(e) => handleAlertSettingChange('slackWebhook', e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        placeholder="https://hooks.slack.com/services/..."
+                      />
+                    </div>
+                  )}
+
                 {/* Alert Throttling */}
                 <div className="flex items-center justify-between">
                   <div>
@@ -503,7 +506,7 @@ export default function SettingsPage() {
                     onChange={(value) => handleAlertSettingChange('alertThrottling', value)}
                   />
                 </div>
-                
+
                 {/* Max Alerts Per Hour */}
                 {alertSettings.alertThrottling && (
                   <div className="space-y-2">
@@ -519,7 +522,7 @@ export default function SettingsPage() {
                     />
                   </div>
                 )}
-                
+
                 {/* Alert Grouping */}
                 <div className="flex items-center justify-between">
                   <div>
@@ -531,7 +534,7 @@ export default function SettingsPage() {
                     onChange={(value) => handleAlertSettingChange('alertGrouping', value)}
                   />
                 </div>
-                
+
                 {/* Auto-Resolve Alerts */}
                 <div className="flex items-center justify-between">
                   <div>
@@ -545,23 +548,23 @@ export default function SettingsPage() {
                 </div>
               </>
             )}
-            
+
             <div className="pt-4">
               <Button onClick={saveAlertSettings}>
                 Save Alert Settings
               </Button>
             </div>
           </div>
-        </Card>
+        </GlassmorphicCard>
       </TabsContent>
     </>
   );
-  
+
   return (
     <ModuleSettingsPage
       moduleId="sentinel"
       moduleName="Sentinel"
-      moduleDescription="Configure settings for the Sentinel security module, including agent behavior, security scans, and alert thresholds."
+      moduleDescription="Configure your digital watchtower. Protect your kingdom from threats with vigilant security agents."
       agents={sentinelAgents}
       additionalTabs={additionalTabs}
     />

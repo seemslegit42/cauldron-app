@@ -22,7 +22,7 @@ export interface CauldronLayoutProps {
 
 /**
  * CauldronLayout - The main layout component for the Cauldron™ DOP
- * 
+ *
  * Features:
  * - Left sidebar with module navigation
  * - Top bar with date/time, AI status, and quick actions
@@ -66,7 +66,7 @@ export const CauldronLayout: React.FC<CauldronLayoutProps> = ({
     month: 'short',
     day: 'numeric',
   }).format(currentDateTime);
-  
+
   const formattedTime = new Intl.DateTimeFormat('en-US', {
     hour: 'numeric',
     minute: 'numeric',
@@ -78,16 +78,25 @@ export const CauldronLayout: React.FC<CauldronLayoutProps> = ({
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100">
       {/* Background pattern */}
       {backgroundPattern !== 'none' && (
-        <div 
+        <div
           className={cn(
             "fixed inset-0 z-0 opacity-10",
             {
               "bg-[url('/assets/patterns/grid-pattern.svg')]": backgroundPattern === 'grid',
               "bg-[url('/assets/patterns/hex-pattern.svg')]": backgroundPattern === 'hex',
               "bg-[url('/assets/patterns/circuit-pattern.svg')]": backgroundPattern === 'circuit',
+              "bg-[url('/assets/patterns/dots-pattern.svg')]": backgroundPattern === 'dots',
             }
           )}
         />
+      )}
+
+      {/* Ambient glow based on active module */}
+      {activeModule && (
+        <>
+          <div className="absolute top-0 right-0 -z-10 h-96 w-96 rounded-full bg-gradient-to-br from-blue-900/20 to-purple-900/20 blur-3xl" />
+          <div className="absolute bottom-0 left-0 -z-10 h-96 w-96 rounded-full bg-gradient-to-br from-purple-900/20 to-blue-900/20 blur-3xl" />
+        </>
       )}
 
       {/* Left Sidebar - Module Navigation */}
@@ -124,7 +133,7 @@ export const CauldronLayout: React.FC<CauldronLayoutProps> = ({
 
         {/* Right section - Actions */}
         <div className="flex items-center space-x-4">
-          <button 
+          <button
             className="rounded-full p-2 text-gray-400 hover:bg-gray-800 hover:text-white"
             onClick={() => setIsCommandPaletteOpen(true)}
           >
@@ -133,10 +142,10 @@ export const CauldronLayout: React.FC<CauldronLayoutProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
-          
+
           <RiskLevelIndicator />
-          
-          <button 
+
+          <button
             className="rounded-full p-2 text-gray-400 hover:bg-gray-800 hover:text-white"
             onClick={() => setIsNotificationsOpen(true)}
           >
@@ -145,9 +154,9 @@ export const CauldronLayout: React.FC<CauldronLayoutProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
           </button>
-          
+
           {showChiefOfStaff && (
-            <button 
+            <button
               className="rounded-full p-2 text-gray-400 hover:bg-gray-800 hover:text-white"
               onClick={() => setIsChiefOfStaffOpen(!isChiefOfStaffOpen)}
             >
@@ -157,7 +166,7 @@ export const CauldronLayout: React.FC<CauldronLayoutProps> = ({
               </svg>
             </button>
           )}
-          
+
           <UserMenu user={user} />
         </div>
       </header>
@@ -205,15 +214,15 @@ export const CauldronLayout: React.FC<CauldronLayoutProps> = ({
       </AnimatePresence>
 
       {/* Command Palette */}
-      <CommandPalette 
-        isOpen={isCommandPaletteOpen} 
-        onClose={() => setIsCommandPaletteOpen(false)} 
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
       />
 
       {/* Notifications Panel */}
-      <NotificationsPanel 
-        isOpen={isNotificationsOpen} 
-        onClose={() => setIsNotificationsOpen(false)} 
+      <NotificationsPanel
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
       />
 
       {/* XP/Operator Bar */}
@@ -226,17 +235,17 @@ export const CauldronLayout: React.FC<CauldronLayoutProps> = ({
           className: 'border-b-0 border-x-0'
         })
       )}>
-        <motion.div 
+        <motion.div
           className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
           style={{ width: '35%' }}
-          animate={{ 
+          animate={{
             width: ['35%', '36%', '35%'],
             opacity: [1, 0.8, 1]
           }}
-          transition={{ 
-            duration: 2, 
-            repeat: Infinity, 
-            repeatType: 'reverse' 
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            repeatType: 'reverse'
           }}
         />
       </footer>

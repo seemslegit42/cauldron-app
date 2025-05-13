@@ -16,6 +16,9 @@ import { PermissionGuard } from '@src/shared/components/auth/PermissionGuard';
 import { ModuleSettingsButton } from '@src/shared/components/settings/ModuleSettingsButton';
 import { DarkModeToggle } from '@src/shared/components/DarkModeToggle';
 import { DarkModeProvider } from '@src/shared/theme/DarkModeProvider';
+import { GlassmorphicCard } from '@src/shared/components/branding/GlassmorphicCard';
+import { ModuleHeader } from '@src/shared/components/branding/ModuleHeader';
+import { CyberpunkBackground } from '@src/shared/components/branding/CyberpunkBackground';
 
 // Import operations
 import {
@@ -212,44 +215,50 @@ export default function EnhancedArcanaPage() {
   // If user doesn't have permission to view the dashboard, show a message
   if (!canViewDashboard) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-900 text-white">
-        <div className="max-w-md rounded-lg bg-gray-800 p-8 shadow-lg">
-          <h1 className="mb-4 text-2xl font-bold text-blue-400">Access Restricted</h1>
+      <CyberpunkBackground moduleId="arcana" pattern="grid" glowIntensity="low" className="flex min-h-screen items-center justify-center text-white">
+        <GlassmorphicCard moduleId="arcana" level="medium" border shadow glow className="max-w-md p-8">
+          <h1 className="mb-4 text-2xl font-bold text-arcana-purple-400">Access Restricted</h1>
           <p className="mb-6 text-gray-300">
-            You don't have permission to access the Arcana Dashboard.
+            You don't have permission to access the Arcana Dashboard. Your neural interface requires additional clearance.
           </p>
           <Link
             to="/"
-            className="rounded-md bg-gray-700 px-4 py-2 font-medium text-white hover:bg-gray-600"
+            className="rounded-md bg-arcana-purple-600 px-4 py-2 font-medium text-white hover:bg-arcana-purple-700"
           >
             Return to Home
           </Link>
-        </div>
-      </div>
+        </GlassmorphicCard>
+      </CyberpunkBackground>
     );
   }
 
   // Loading state
   if (isLoadingUser || isLoadingContext) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-900">
-        <motion.div
-          className="h-16 w-16 rounded-full border-4 border-purple-500 border-t-transparent"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-        />
-      </div>
+      <CyberpunkBackground moduleId="arcana" pattern="grid" glowIntensity="low" className="flex min-h-screen items-center justify-center">
+        <GlassmorphicCard moduleId="arcana" level="light" border shadow glow className="p-8 flex items-center justify-center">
+          <motion.div
+            className="h-16 w-16 rounded-full border-4 border-arcana-purple-500 border-t-transparent"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+          />
+          <p className="ml-4 text-arcana-purple-300">Initializing neural interface...</p>
+        </GlassmorphicCard>
+      </CyberpunkBackground>
     );
   }
 
   return (
     <DarkModeProvider initialDarkMode={true}>
-      <div className="min-h-screen bg-gray-900 bg-[url('/images/grid-pattern.svg')] bg-fixed text-white relative">
-        {/* Background ambient glow */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-1/2 h-1/2 bg-blue-900/20 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/4 w-1/2 h-1/2 bg-purple-900/20 rounded-full blur-3xl"></div>
-        </div>
+      <CyberpunkBackground
+        moduleId="arcana"
+        pattern="grid"
+        patternOpacity={0.1}
+        glowIntensity="medium"
+        glowPositions={['top-right', 'bottom-left']}
+        animate={enableAnimations}
+        className="min-h-screen text-white relative"
+      >
 
         {/* Header */}
         <header className={`sticky top-0 z-10 border-b border-gray-800 backdrop-blur-md ${personaStyles.headerBg}`}>
@@ -335,11 +344,11 @@ export default function EnhancedArcanaPage() {
                 resource={SENTIENT_LOOP_RESOURCE}
                 action={USE_ACTION}
                 fallback={
-                  <div className="rounded-lg bg-gray-800 p-4">
+                  <GlassmorphicCard moduleId="arcana" level="medium" border shadow className="p-4">
                     <p className="text-gray-400">
-                      You don't have permission to use the Sentient Loop™.
+                      You don't have permission to use the Sentient Loop™. Please contact your administrator for access.
                     </p>
-                  </div>
+                  </GlassmorphicCard>
                 }
               >
                 <EnhancedSentientLoopPanel
@@ -364,11 +373,11 @@ export default function EnhancedArcanaPage() {
                 resource={AI_ASSISTANT_RESOURCE}
                 action={USE_ACTION}
                 fallback={
-                  <div className="rounded-lg bg-gray-800 p-4">
+                  <GlassmorphicCard moduleId="arcana" level="medium" border shadow className="p-4">
                     <p className="text-gray-400">
-                      You don't have permission to use the AI assistant.
+                      You don't have permission to use the AI assistant. Your digital companion awaits approval.
                     </p>
-                  </div>
+                  </GlassmorphicCard>
                 }
               >
                 <PromptAssistant module="arcana" />
@@ -391,11 +400,11 @@ export default function EnhancedArcanaPage() {
                 resource={CHIEF_OF_STAFF_RESOURCE}
                 action={READ_ACTION}
                 fallback={
-                  <div className="rounded-lg bg-gray-800 p-4">
+                  <GlassmorphicCard moduleId="arcana" level="medium" border shadow className="p-4">
                     <p className="text-gray-400">
-                      You don't have permission to use the Chief of Staff.
+                      You don't have permission to use the Chief of Staff. Your executive AI is on vacation in the digital Bahamas.
                     </p>
-                  </div>
+                  </GlassmorphicCard>
                 }
               >
                 <ChiefOfStaffPanel
@@ -481,7 +490,7 @@ export default function EnhancedArcanaPage() {
             </>
           )}
         </AnimatePresence>
-      </div>
+      </CyberpunkBackground>
     </DarkModeProvider>
   );
 }

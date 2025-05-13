@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React from 'react';
 import { cn } from '@src/shared/utils/cn';
-import { getGlassmorphismClasses } from '@src/shared/utils/glassmorphism';
 import { CauldronLayout } from '@src/shared/components/layout/CauldronLayout';
-import { Button } from '@src/shared/components/ui/Button';
 import { TimeframeOption } from '../../types';
+import { ModuleHeader } from '@src/shared/components/branding/ModuleHeader';
+import { useModuleTheme } from '@src/shared/hooks/useModuleTheme';
+import { BarChart } from 'lucide-react';
 
 export interface AthenaLayoutProps {
   children: React.ReactNode;
@@ -18,7 +18,7 @@ export interface AthenaLayoutProps {
 
 /**
  * AthenaLayout - Layout component for the Athena business intelligence module
- * 
+ *
  * Features:
  * - Header with title, description, and actions
  * - Timeframe selector
@@ -33,52 +33,46 @@ export const AthenaLayout: React.FC<AthenaLayoutProps> = ({
   onTimeframeChange,
   className,
 }) => {
+  const { colors, classes } = useModuleTheme('athena');
+
   return (
     <CauldronLayout activeModule="athena" backgroundPattern="dots">
       <div className="space-y-6">
         {/* Header */}
-        <div className={cn(
-          "overflow-hidden rounded-lg",
-          getGlassmorphismClasses({
-            level: 'medium',
-            border: true,
-            shadow: true,
-          })
-        )}>
-          <div className="p-6">
-            <div className="flex flex-col justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
-              <div>
-                <h1 className="text-2xl font-bold text-white">{title}</h1>
-                {description && (
-                  <p className="mt-2 text-gray-400">{description}</p>
-                )}
-              </div>
-              <div className="flex items-center space-x-4">
-                {onTimeframeChange && (
-                  <div className="flex space-x-1 rounded-md bg-gray-800 p-1">
-                    {Object.values(TimeframeOption).map((tf) => (
-                      <button
-                        key={tf}
-                        className={cn(
-                          "rounded-md px-3 py-1 text-sm font-medium transition-colors",
-                          timeframe === tf
-                            ? "bg-yellow-600 text-white"
-                            : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                        )}
-                        onClick={() => onTimeframeChange(tf)}
-                      >
-                        {tf.charAt(0).toUpperCase() + tf.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {actions && (
-                  <div className="flex space-x-3">{actions}</div>
-                )}
-              </div>
+        <ModuleHeader
+          moduleId="athena"
+          title={title}
+          description={description}
+          icon={<BarChart />}
+          actions={
+            <div className="flex items-center space-x-4">
+              {/* Timeframe selector */}
+              {onTimeframeChange && (
+                <div className="flex space-x-1 rounded-md bg-gray-800 p-1">
+                  {Object.values(TimeframeOption).map((tf) => (
+                    <button
+                      key={tf}
+                      type="button"
+                      className={cn(
+                        "rounded-md px-3 py-1 text-sm font-medium transition-colors",
+                        timeframe === tf
+                          ? `bg-blue-600 text-white`
+                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                      )}
+                      onClick={() => onTimeframeChange(tf)}
+                    >
+                      {tf.charAt(0).toUpperCase() + tf.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {actions && (
+                <div className="flex space-x-3">{actions}</div>
+              )}
             </div>
-          </div>
-        </div>
+          }
+        />
 
         {/* Content */}
         <div className={cn("space-y-6", className)}>

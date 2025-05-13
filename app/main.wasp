@@ -353,6 +353,12 @@ page ArcanaNewPage {
   component: import ArcanaNewUI from "@src/modules/arcana/pages/ArcanaPageNew"
 }
 
+route EnhancedArcanaRoute { path: "/arcana-enhanced", to: EnhancedArcanaPage }
+page EnhancedArcanaPage {
+  authRequired: true,
+  component: import EnhancedArcanaUI from "@src/modules/arcana/pages/EnhancedArcanaPage"
+}
+
 route ArcanaSettingsRoute { path: "/arcana/settings", to: ArcanaSettingsPage }
 page ArcanaSettingsPage {
   authRequired: true,
@@ -680,6 +686,12 @@ page PhantomNewPage {
   component: import PhantomNewUI from "@src/modules/phantom/pages/PhantomPageNew"
 }
 
+route EnhancedPhantomRoute { path: "/phantom-enhanced", to: EnhancedPhantomPage }
+page EnhancedPhantomPage {
+  authRequired: true,
+  component: import EnhancedPhantomUI from "@src/modules/phantom/pages/PhantomPageNew"
+}
+
 route PhantomTestRoute { path: "/phantom-test", to: PhantomTestPage }
 page PhantomTestPage {
   authRequired: true,
@@ -704,6 +716,12 @@ route ManifoldRoute { path: "/manifold", to: ManifoldPage }
 page ManifoldPage {
   authRequired: true,
   component: import ManifoldStudio from "@src/modules/manifold/pages/ManifoldPage"
+}
+
+route EnhancedManifoldRoute { path: "/manifold-enhanced", to: EnhancedManifoldPage }
+page EnhancedManifoldPage {
+  authRequired: true,
+  component: import EnhancedManifoldStudio from "@src/modules/manifold/pages/EnhancedManifoldPage"
 }
 
 route ManifoldSettingsRoute { path: "/manifold/settings", to: ManifoldSettingsPage }
@@ -841,6 +859,12 @@ page ForgeflowPage {
   component: import ForgeflowBuilder from "@src/modules/forgeflow/pages/ForgeflowPage"
 }
 
+route EnhancedForgeflowRoute { path: "/forgeflow-enhanced", to: EnhancedForgeflowPage }
+page EnhancedForgeflowPage {
+  authRequired: true,
+  component: import EnhancedForgeflowBuilder from "@src/modules/forgeflow/pages/EnhancedForgeflowPage"
+}
+
 route ForgeflowSettingsRoute { path: "/forgeflow/settings", to: ForgeflowSettingsPage }
 page ForgeflowSettingsPage {
   authRequired: true,
@@ -860,6 +884,12 @@ page SentinelPage {
   component: import { SentinelPage } from "@src/modules/sentinel/pages"
 }
 
+route EnhancedSentinelRoute { path: "/sentinel-enhanced", to: EnhancedSentinelPage }
+page EnhancedSentinelPage {
+  authRequired: true,
+  component: import { EnhancedSentinelPage } from "@src/modules/sentinel/pages/EnhancedSentinelPage"
+}
+
 route SentinelSettingsRoute { path: "/sentinel/settings", to: SentinelSettingsPage }
 page SentinelSettingsPage {
   authRequired: true,
@@ -871,6 +901,12 @@ route AthenaRoute { path: "/athena", to: AthenaPage }
 page AthenaPage {
   authRequired: true,
   component: import AthenaDashboard from "@src/modules/athena/pages/AthenaPage"
+}
+
+route EnhancedAthenaRoute { path: "/athena-enhanced", to: EnhancedAthenaPage }
+page EnhancedAthenaPage {
+  authRequired: true,
+  component: import EnhancedAthenaDashboard from "@src/modules/athena/pages/EnhancedAthenaPage"
 }
 
 route AthenaSettingsRoute { path: "/athena/settings", to: AthenaSettingsPage }
