@@ -316,6 +316,12 @@ page AdminUIButtonsPage {
   component: import AdminUI from "@src/admin/elements/ui-elements/ButtonsPage"
 }
 
+route ToastDemoRoute { path: "/toast-demo", to: ToastDemoPage }
+page ToastDemoPage {
+  authRequired: true,
+  component: import ToastDemoPage from "@src/client/pages/ToastDemoPage"
+}
+
 route NotFoundRoute { path: "*", to: NotFoundPage }
 page NotFoundPage {
   component: import { NotFoundPage } from "@src/client/components/NotFoundPage"

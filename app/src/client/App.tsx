@@ -8,6 +8,7 @@ import { routes } from 'wasp/client/router';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from 'wasp/client/auth';
 import { useIsLandingPage } from './hooks/useIsLandingPage';
+import { ToastProviderWithContainer } from '../shared/components/Toast';
 
 /**
  * use this component to wrap all child components
@@ -38,8 +39,8 @@ export default function App() {
   }, [location]);
 
   return (
-    <>
-      <div className='min-h-screen dark:text-white dark:bg-boxdark-2'>
+    <ToastProviderWithContainer>
+      <div className='min-h-screen dark:text-white dark:bg-gray-900'>
         {isAdminDashboard ? (
           <Outlet />
         ) : (
@@ -52,6 +53,6 @@ export default function App() {
         )}
       </div>
       <CookieConsentBanner />
-    </>
+    </ToastProviderWithContainer>
   );
 }
